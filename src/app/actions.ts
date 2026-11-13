@@ -2,6 +2,7 @@
 
 import type { ListingStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { notifyAdminPending } from "@/lib/email";
 import { redirect } from "next/navigation";
 import { LOCK_MINUTES, MAX_FAILED_ATTEMPTS } from "@/lib/config";
 import { db } from "@/lib/db";

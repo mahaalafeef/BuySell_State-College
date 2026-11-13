@@ -9,6 +9,9 @@ export function Header() {
           {SITE_NAME}
         </Link>
         <nav className="flex items-center gap-2">
+          <Link href="/housing" className="btn text-ink hover:bg-paper">
+            Housing
+          </Link>
           <Link href="/manage" className="btn text-ink hover:bg-paper">
             My listings
           </Link>

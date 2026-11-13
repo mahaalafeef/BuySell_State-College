@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ListingCard } from "@/components/ListingCard";
-import { CATEGORIES } from "@/lib/config";
+import { CATEGORIES, SALE_CATEGORIES } from "@/lib/config";
 import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export default async function Home({
   const listings = await db.listing.findMany({
     where: {
       status: "APPROVED",
-      ...(activeCategory ? { category: activeCategory } : {}),
+      ...(activeCategory ? { category: activeCategory } : { category: { in: [...SALE_CATEGORIES] } }),
       ...(term
         ? {
             OR: [
@@ -57,7 +57,7 @@ export default async function Home({
       </div>
 
       <nav aria-label="Categories" className="flex flex-wrap gap-2">
-        {[undefined, ...CATEGORIES].map((cat) => {
+        {[undefined, ...SALE_CATEGORIES].map((cat) => {
           const active = cat === activeCategory;
           return (
             <Link

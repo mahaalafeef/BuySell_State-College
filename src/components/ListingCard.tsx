@@ -1,16 +1,17 @@
 import Link from "next/link";
-import { formatPrice } from "@/lib/config";
+import { formatListingPrice } from "@/lib/config";
 
 type Props = {
   id: string;
   title: string;
   priceCents: number;
+  category: string;
   location: string;
   condition: string;
   imageUrl: string | null;
 };
 
-export function ListingCard({ id, title, priceCents, location, condition, imageUrl }: Props) {
+export function ListingCard({ id, title, priceCents, category, location, condition, imageUrl }: Props) {
   return (
     <Link
       href={`/listings/${id}`}
@@ -24,7 +25,7 @@ export function ListingCard({ id, title, priceCents, location, condition, imageU
           <div className="grid h-full place-items-center text-muted">No photo</div>
         )}
         <span className="absolute bottom-3 left-3 rounded-sm bg-tag px-2.5 py-1 font-display text-lg font-bold text-ink">
-          {formatPrice(priceCents)}
+          {formatListingPrice(priceCents, category)}
         </span>
       </div>
       <div className="p-4">

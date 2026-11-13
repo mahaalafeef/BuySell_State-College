@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/StatusBadge";
-import { formatPrice } from "@/lib/config";
+import { formatListingPrice } from "@/lib/config";
 import { db } from "@/lib/db";
 import { canManage, isAdmin } from "@/lib/session";
 
@@ -51,7 +51,7 @@ export default async function ListingPage({ params }: Params) {
         <div>
           <h1 className="text-3xl font-bold">{listing.title}</h1>
           <p className="mt-2 inline-block rounded-sm bg-tag px-3 py-1 font-display text-2xl font-bold">
-            {listing.status === "SOLD" ? "Sold" : formatPrice(listing.priceCents)}
+            {listing.status === "SOLD" ? "Sold" : formatListingPrice(listing.priceCents, listing.category)}
           </p>
         </div>
 

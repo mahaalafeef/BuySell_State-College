@@ -177,7 +177,6 @@ export async function updateListing(id: string, _prev: FormState, fd: FormData):
       rejectionReason: null,
     },
   });
-  });
 
   if (updated.status === "PENDING") await notifyAdminPending(updated, "edited");
 

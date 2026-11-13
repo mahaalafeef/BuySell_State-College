@@ -160,7 +160,7 @@ export async function updateListing(id: string, _prev: FormState, fd: FormData):
   if (!phone) return { fieldErrors: { phone: ["Enter a valid phone number"] }, values };
 
   const d = parsed.data;
-  await db.listing.update({
+  const updated = await db.listing.update({ 
     where: { id },
     data: {
       title: d.title,
@@ -177,6 +177,9 @@ export async function updateListing(id: string, _prev: FormState, fd: FormData):
       rejectionReason: null,
     },
   });
+  });
+
+  if (updated.status === "PENDING") await notifyAdminPending(updated, "edited");
 
   refresh();
   revalidatePath(`/listings/${id}`);

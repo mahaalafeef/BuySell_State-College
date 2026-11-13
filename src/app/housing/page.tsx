@@ -83,7 +83,7 @@ export default async function HousingPage({
           <p className="mt-1 text-muted">
             {term || active ? "Try a different search or type." : "Have a room or sublease? Post it here."}
           </p>
-          <Link href="/sell" className="btn-primary mt-4">
+          <Link href="/sell?type=housing" className="btn-primary mt-4">
             Post housing
           </Link>
         </div>

@@ -2,13 +2,14 @@
 
 import { useActionState } from "react";
 import type { FormState } from "@/app/actions";
-import { CATEGORIES, CONDITIONS } from "@/lib/config";
+import { CONDITIONS, HOUSING_CATEGORIES, RENTAL_CONDITION, SALE_CATEGORIES } from "@/lib/config";
 import { SubmitButton } from "./SubmitButton";
 
 type Props = {
   mode: "create" | "edit";
   action: (prev: FormState, fd: FormData) => Promise<FormState>;
   initial?: Record<string, string>;
+  kind?: "item" | "housing"; // edit mode works it out from the listing's category
 };
 
 function Field({
@@ -40,9 +41,12 @@ function Field({
   );
 }
 
-export function ListingForm({ mode, action, initial = {} }: Props) {
+export function ListingForm({ mode, action, initial = {}, kind }: Props) {
   const [state, formAction] = useActionState(action, undefined);
   const v = { ...initial, ...state?.values };
+  const housing =
+    (kind ?? ((HOUSING_CATEGORIES as readonly string[]).includes(v.category ?? "") ? "housing" : "item")) === "housing";
+  const categories: readonly string[] = housing ? HOUSING_CATEGORIES : SALE_CATEGORIES;
   const err = (name: string) => state?.fieldErrors?.[name]?.[0];
   const a11y = (name: string) => ({
     "aria-invalid": err(name) ? true : undefined,
@@ -61,7 +65,14 @@ export function ListingForm({ mode, action, initial = {} }: Props) {
         <input id="title" name="title" required defaultValue={v.title} className="input" {...a11y("title")} />
       </Field>
 
-      <Field label="Description" name="description" error={err("description")}>
+      <Field
+        label="Description"
+        name="description"
+        hint={
+          housing ? "Include bedrooms, bathrooms, move-in date, lease length, and what utilities cost." : undefined
+        }
+        error={err("description")}
+      >
         <textarea
           id="description"
           name="description"
@@ -73,14 +84,14 @@ export function ListingForm({ mode, action, initial = {} }: Props) {
         />
       </Field>
 
-      <div className="grid gap-5 sm:grid-cols-3">
-        <Field label="Price" name="price" error={err("price")}>
+      <div className={`grid gap-5 ${housing ? "sm:grid-cols-2" : "sm:grid-cols-3"}`}>
+        <Field label={housing ? "Rent per month" : "Price"} name="price" error={err("price")}>
           <input
             id="price"
             name="price"
             required
             inputMode="decimal"
-            placeholder="25.00"
+            placeholder={housing ? "800" : "25.00"}
             defaultValue={v.price}
             className="input"
             {...a11y("price")}
@@ -91,12 +102,15 @@ export function ListingForm({ mode, action, initial = {} }: Props) {
             <option value="" disabled>
               Choose one
             </option>
-            {CATEGORIES.map((c) => (
+            {categories.map((c) => (
               <option key={c}>{c}</option>
             ))}
           </select>
         </Field>
-        <Field label="Condition" name="condition" error={err("condition")}>
+        {housing ? (
+          <input type="hidden" name="condition" value={RENTAL_CONDITION} />
+        ) : (
+          <Field label="Condition" name="condition" error={err("condition")}>
           <select id="condition" name="condition" required defaultValue={v.condition ?? ""} className="input">
             <option value="" disabled>
               Choose one
@@ -106,9 +120,10 @@ export function ListingForm({ mode, action, initial = {} }: Props) {
             ))}
           </select>
         </Field>
+        )}
       </div>
 
-      <Field label="Location" name="location" error={err("location")}>
+      <Field label={housing ? "Neighborhood or area" : "Location"} name="location" error={err("location")}>
         <input id="location" name="location" required defaultValue={v.location} className="input" {...a11y("location")} />
       </Field>
 

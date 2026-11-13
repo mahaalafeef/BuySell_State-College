@@ -21,6 +21,9 @@ export const HOUSING_CATEGORIES = ["Housing for rent", "Sublease"] as const;
 
 export const CATEGORIES = [...SALE_CATEGORIES, ...HOUSING_CATEGORIES] as const;
 
+// Housing listings have no item condition; this value is stored instead
+export const RENTAL_CONDITION = "Rental";
+
 export const CONDITIONS = ["New", "Like new", "Good", "Fair", "For parts"] as const;
 
 // Lock a listing after this many wrong passcode/phone attempts

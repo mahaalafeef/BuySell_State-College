@@ -19,7 +19,7 @@ export function Header() {
             My listings
           </Link>
           <Link href="/sell" className="btn-primary">
-            Sell an item
+            Post a listing
           </Link>
         </nav>
       </div>

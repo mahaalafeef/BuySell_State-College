@@ -80,7 +80,7 @@ export default async function Home({
           <p className="mt-1 text-muted">
             {term || activeCategory ? "Try a different search or category." : "List the first item and it will show up here."}
           </p>
-          <Link href="/sell" className="btn-primary mt-4">
+          <Link href="/sell?type=item" className="btn-primary mt-4">
             Sell an item
           </Link>
         </div>

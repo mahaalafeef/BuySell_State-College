@@ -1,12 +1,15 @@
 import { z } from "zod";
-import { CATEGORIES, CONDITIONS } from "./config";
+import { CATEGORIES, CONDITIONS, RENTAL_CONDITION } from "./config";
 
 const base = z.object({
   title: z.string().trim().min(3, "Enter at least 3 characters").max(100, "Keep it under 100 characters"),
   description: z.string().trim().min(10, "Describe the item in at least 10 characters").max(4000),
   price: z.string().trim().regex(/^\d{1,7}(\.\d{1,2})?$/, "Enter a price like 25 or 25.50"),
   category: z.enum(CATEGORIES, { errorMap: () => ({ message: "Choose a category" }) }),
-  condition: z.enum(CONDITIONS, { errorMap: () => ({ message: "Choose a condition" }) }),
+  condition: z.string().refine(
+    (v) => (CONDITIONS as readonly string[]).includes(v) || v === RENTAL_CONDITION,
+    "Choose a condition",
+  ),
   location: z.string().trim().min(2, "Enter a town or neighborhood").max(100),
   imageUrl: z
     .string()

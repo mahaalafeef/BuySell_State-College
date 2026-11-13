@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatListingPrice } from "@/lib/config";
+import { formatListingPrice, HOUSING_CATEGORIES } from "@/lib/config";
 
 type Props = {
   id: string;
@@ -32,7 +32,9 @@ export function ListingCard({ id, title, priceCents, category, location, conditi
         <h3 className="line-clamp-2 text-lg font-semibold">{title}</h3>
         <div className="mt-1 flex items-center justify-between gap-2 text-sm text-muted">
           <span className="truncate">{location}</span>
-          <span className="shrink-0">{condition}</span>
+          <span className="shrink-0">
+            {(HOUSING_CATEGORIES as readonly string[]).includes(category) ? category : condition}
+          </span>
         </div>
       </div>
     </Link>

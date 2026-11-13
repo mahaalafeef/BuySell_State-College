@@ -83,7 +83,8 @@ export async function createListing(_prev: FormState, fd: FormData): Promise<For
       status: await statusAfterChange(null),
     },
   });
-
+  
+  if (listing.status === "PENDING") await notifyAdminPending(listing, "new");
   await updateUserSession({ addId: listing.id }); // let them edit right away
   refresh();
   redirect(`/sell/done?id=${listing.id}`);

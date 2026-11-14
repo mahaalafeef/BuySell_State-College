@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PhotoGallery } from "@/components/PhotoGallery";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatListingPrice } from "@/lib/config";
 import { db } from "@/lib/db";
@@ -30,32 +31,7 @@ export default async function ListingPage({ params }: Params) {
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
-      <div className="space-y-3">
-        <div className="overflow-hidden rounded-lg border border-line bg-white">
-          {photos[0] ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={photos[0]} alt={listing.title} className="w-full object-cover" />
-          ) : (
-            <div className="grid aspect-[4/3] place-items-center text-muted">No photo</div>
-          )}
-        </div>
-        {photos.length > 1 && (
-          <div className="grid grid-cols-4 gap-2">
-            {photos.slice(1).map((url) => (
-              <a
-                key={url}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block overflow-hidden rounded-md border border-line"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt="" className="aspect-square w-full object-cover" loading="lazy" />
-              </a>
-            ))}
-          </div>
-        )}
-      </div>
+      <PhotoGallery photos={photos} title={listing.title} />
 
       <div className="space-y-5">
         {(owner || admin) && listing.status !== "APPROVED" && (

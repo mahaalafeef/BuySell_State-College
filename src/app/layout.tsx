@@ -4,14 +4,14 @@ import { Bricolage_Grotesque, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 import { ChatWidget } from "@/components/ChatWidget";
 import { Header } from "@/components/Header";
-import { SITE_NAME } from "@/lib/config";
+import { SITE_NAME, SITE_TITLE } from "@/lib/config";
 
 const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-display" });
 const body = Source_Sans_3({ subsets: ["latin"], variable: "--font-body" });
 
 export const metadata: Metadata = {
-  title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
-  description: "Things for sale and housing, listed by the people offering them.",
+  title: { default: SITE_TITLE, template: `%s | ${SITE_NAME}` },
+  description: "Items for sale and housing in State College and neighboring areas, listed by the people offering them.",
 };
 
 export const viewport: Viewport = { themeColor: "#2B5D8C" };
@@ -33,7 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </nav>
           </div>
         </footer>
-        <ChatWidget />
+        <ChatWidget whatsappEnabled={Boolean(process.env.SUPPORT_WHATSAPP)} />
       </body>
     </html>
   );

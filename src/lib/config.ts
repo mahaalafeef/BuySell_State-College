@@ -1,6 +1,9 @@
 // Edit this file to change categories, conditions, and limits.
 
-export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Marketplace";
+// Short name: shown in the header, footer, and chat assistant
+export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "BuySell State College";
+// Full title: shown on the browser tab and in search results
+export const SITE_TITLE = process.env.NEXT_PUBLIC_SITE_TITLE || "BuySell State College and Neighboring Areas";
 // Logo: put your file in the "public" folder and set its name here (e.g. "/logo.png").
 export const LOGO_SRC = "/logo.png";
 // Set to false if your logo already includes the site name.
@@ -8,7 +11,7 @@ export const SHOW_SITE_NAME_WITH_LOGO = true;
 
 // Text on the home page banner
 export const HERO_TITLE = "Buy, sell, and find a place to live";
-export const HERO_SUBTITLE = "Listings from people in your community, all in one place.";
+export const HERO_SUBTITLE = "Listings from people in State College and neighboring areas, all in one place.";
 
 export const CURRENCY = process.env.NEXT_PUBLIC_CURRENCY || "USD";
 

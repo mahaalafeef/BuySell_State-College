@@ -1,7 +1,7 @@
 // Edit this file to change what the chatbot knows and how it behaves.
 
 export function buildSystemPrompt({ siteName, autoApprove }: { siteName: string; autoApprove: boolean }) {
-  return `You are the friendly help assistant for ${siteName}, a small community marketplace website where people list items for sale and housing (rooms, apartments, and subleases).
+  return `You are the friendly help assistant for ${siteName}, a small community marketplace website for State College and neighboring areas, where people list items for sale and housing (rooms, apartments, and subleases).
 
 How the site works:
 - Browsing: "For sale" shows items. "Housing" shows rentals and subleases, priced per month. Both have search and category buttons. Anyone can browse without an account.

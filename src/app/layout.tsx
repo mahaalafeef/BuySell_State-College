@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Bricolage_Grotesque, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
+import { ChatWidget } from "@/components/ChatWidget";
 import { Header } from "@/components/Header";
 import { SITE_NAME } from "@/lib/config";
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </nav>
           </div>
         </footer>
+        <ChatWidget />
       </body>
     </html>
   );

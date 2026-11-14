@@ -33,10 +33,11 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const { status } = await searchParams;
   const tab: Tab = (TABS as readonly string[]).includes(status ?? "") ? (status as Tab) : "PENDING";
 
-  const [auto, listings, counts] = await Promise.all([
+  const [auto, listings, counts, openSupport] = await Promise.all([
     getAutoApprove(),
     db.listing.findMany({ where: { status: tab }, orderBy: { createdAt: "desc" }, take: 100 }),
     db.listing.groupBy({ by: ["status"], _count: { _all: true } }),
+    db.supportRequest.count({ where: { status: "OPEN" } }),
   ]);
   const countOf = (s: Tab) => counts.find((c) => c.status === s)?._count._all ?? 0;
 
@@ -44,9 +45,14 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold">Admin</h1>
-        <form action={adminLogout}>
-          <button className="btn-ghost">Sign out</button>
-        </form>
+        <div className="flex gap-2">
+          <Link href="/admin/support" className="btn-ghost">
+            Customer messages{openSupport > 0 ? ` (${openSupport} new)` : ""}
+          </Link>
+          <form action={adminLogout}>
+            <button className="btn-ghost">Sign out</button>
+          </form>
+        </div>
       </div>
 
       <section className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-line bg-white p-4">

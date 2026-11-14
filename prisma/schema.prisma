@@ -44,3 +44,27 @@ model Setting {
   key   String @id
   value String
 }
+
+// Messages people leave for the team via the chat widget's "Talk to a person" form
+model SupportRequest {
+  id         String   @id @default(cuid())
+  name       String
+  contact    String // email or phone, how to reply
+  message    String
+  transcript String? // recent chatbot conversation, for context
+  status     String   @default("OPEN") // OPEN or RESOLVED
+  createdAt  DateTime @default(now())
+
+  @@index([status, createdAt])
+}
+
+// Used to limit how often one visitor can use the chatbot / contact form
+model ChatEvent {
+  id        String   @id @default(cuid())
+  kind      String // "chat" or "support"
+  ipHash    String
+  createdAt DateTime @default(now())
+
+  @@index([kind, ipHash, createdAt])
+  @@index([createdAt])
+}

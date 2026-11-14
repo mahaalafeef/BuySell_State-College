@@ -5,7 +5,9 @@ const MAX_BYTES = 4 * 1024 * 1024; // Vercel allows request bodies up to 4.5 MB
 const TYPES: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 
 export async function POST(request: Request) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  // Vercel connects Blob stores with built-in sign-in (BLOB_STORE_ID) by default.
+  // BLOB_READ_WRITE_TOKEN also works if you chose to add it.
+  if (!process.env.BLOB_STORE_ID && !process.env.BLOB_READ_WRITE_TOKEN) {
     return NextResponse.json({ error: "Photo uploads aren't set up yet." }, { status: 503 });
   }
 
@@ -25,10 +27,14 @@ export async function POST(request: Request) {
   if (!ext) return NextResponse.json({ error: "Use a JPEG, PNG, or WebP photo." }, { status: 415 });
   if (file.size > MAX_BYTES) return NextResponse.json({ error: "That photo is too large." }, { status: 413 });
 
-  const blob = await put(`listings/${crypto.randomUUID()}.${ext}`, file, {
-    access: "public",
-    contentType: file.type,
-  });
-
-  return NextResponse.json({ url: blob.url });
+  try {
+    const blob = await put(`listings/${crypto.randomUUID()}.${ext}`, file, {
+      access: "public", // the Blob store must be created with Public access
+      contentType: file.type,
+    });
+    return NextResponse.json({ url: blob.url });
+  } catch (err) {
+    console.error("Blob upload failed:", err);
+    return NextResponse.json({ error: "Upload failed. Please try again." }, { status: 500 });
+  }
 }

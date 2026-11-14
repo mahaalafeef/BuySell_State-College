@@ -33,7 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </nav>
           </div>
         </footer>
-        <ChatWidget whatsappEnabled={Boolean(process.env.SUPPORT_WHATSAPP)} />
+        <ChatWidget />
       </body>
     </html>
   );

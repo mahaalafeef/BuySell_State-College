@@ -26,6 +26,13 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
 @layer components {
   .input {
     @apply w-full rounded-md border border-line bg-white px-3 py-2 text-base text-ink placeholder:text-muted/70;

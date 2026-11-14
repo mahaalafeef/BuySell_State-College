@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ListingCard } from "@/components/ListingCard";
+import { PageHero } from "@/components/PageHero";
 import { HOUSING_CATEGORIES } from "@/lib/config";
 import { db } from "@/lib/db";
 
@@ -43,57 +44,63 @@ export default async function HousingPage({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <h1 className="text-3xl font-bold sm:text-4xl">Housing and subleases</h1>
-        <form action="/housing" className="flex w-full gap-2 sm:max-w-md">
+    <div className="space-y-8">
+      <PageHero title="Housing and subleases" subtitle="Rooms, apartments, and subleases from people nearby.">
+        <form action="/housing" className="flex max-w-xl gap-2">
           {active && <input type="hidden" name="category" value={active} />}
           <input
             name="q"
             defaultValue={term}
             placeholder="Search by place or keyword"
             aria-label="Search housing"
-            className="input"
+            className="input border-transparent"
           />
-          <button className="btn-primary">Search</button>
+          <button className="btn bg-tag text-ink hover:brightness-95">Search</button>
         </form>
-      </div>
-
-      <nav aria-label="Housing type" className="flex flex-wrap gap-2">
-        {[undefined, ...HOUSING_CATEGORIES].map((cat) => {
-          const isActive = cat === active;
-          return (
-            <Link
-              key={cat ?? "all"}
-              href={hrefFor(cat)}
-              aria-current={isActive ? "page" : undefined}
-              className={`rounded-full border px-3 py-1 text-sm font-semibold ${
-                isActive ? "border-brand bg-brand text-white" : "border-line bg-white hover:bg-paper"
-              }`}
-            >
-              {cat ?? "All"}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {listings.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-line bg-white p-10 text-center">
-          <p className="text-lg font-semibold">No housing listed yet</p>
-          <p className="mt-1 text-muted">
-            {term || active ? "Try a different search or type." : "Have a room or sublease? Post it here."}
-          </p>
-          <Link href="/sell?type=housing" className="btn-primary mt-4">
+        <div className="mt-4">
+          <Link href="/sell?type=housing" className="btn bg-white text-brand hover:bg-white/90">
             Post housing
           </Link>
         </div>
-      ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {listings.map((l) => (
-            <ListingCard key={l.id} {...l} />
-          ))}
-        </div>
-      )}
+      </PageHero>
+
+      <section className="space-y-4">
+        <nav aria-label="Housing type" className="flex flex-wrap gap-2">
+          {[undefined, ...HOUSING_CATEGORIES].map((cat) => {
+            const isActive = cat === active;
+            return (
+              <Link
+                key={cat ?? "all"}
+                href={hrefFor(cat)}
+                aria-current={isActive ? "page" : undefined}
+                className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+                  isActive ? "border-brand bg-brand text-white" : "border-line bg-white hover:border-brand hover:text-brand"
+                }`}
+              >
+                {cat ?? "All"}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {listings.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-line bg-white p-10 text-center">
+            <p className="text-lg font-semibold">No housing listed yet</p>
+            <p className="mt-1 text-muted">
+              {term || active ? "Try a different search or type." : "Have a room or sublease? Post it here."}
+            </p>
+            <Link href="/sell?type=housing" className="btn-primary mt-4">
+              Post housing
+            </Link>
+          </div>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {listings.map((l) => (
+              <ListingCard key={l.id} {...l} />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

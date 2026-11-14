@@ -1,6 +1,15 @@
 // Edit this file to change categories, conditions, and limits.
 
 export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Marketplace";
+// Logo: put your file in the "public" folder and set its name here (e.g. "/logo.png").
+export const LOGO_SRC = "/logo.svg";
+// Set to false if your logo already includes the site name.
+export const SHOW_SITE_NAME_WITH_LOGO = true;
+
+// Text on the home page banner
+export const HERO_TITLE = "Buy, sell, and find a place to live";
+export const HERO_SUBTITLE = "Listings from people in your community, all in one place.";
+
 export const CURRENCY = process.env.NEXT_PUBLIC_CURRENCY || "USD";
 
 // Things for sale (shown on the home page)

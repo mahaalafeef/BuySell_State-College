@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import Link from "next/link";
 import { Bricolage_Grotesque, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
@@ -9,19 +10,27 @@ const body = Source_Sans_3({ subsets: ["latin"], variable: "--font-body" });
 
 export const metadata: Metadata = {
   title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
-  description: "Things for sale, listed by the people selling them.",
+  description: "Things for sale and housing, listed by the people offering them.",
 };
+
+export const viewport: Viewport = { themeColor: "#0E5E6F" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
-      <body className="min-h-screen">
+      <body className="flex min-h-screen flex-col">
         <Header />
-        <main className="container-page py-8">{children}</main>
-        <footer className="container-page py-10 text-sm text-muted">
-          <a href="/admin" className="underline">
-            Admin
-          </a>
+        <main className="container-page flex-1 py-6 sm:py-8">{children}</main>
+        <footer className="mt-8 border-t border-line bg-white">
+          <div className="container-page flex flex-wrap items-center justify-between gap-3 py-6 text-sm text-muted">
+            <p>{SITE_NAME}</p>
+            <nav className="flex flex-wrap gap-x-5 gap-y-1">
+              <Link href="/" className="hover:text-ink">For sale</Link>
+              <Link href="/housing" className="hover:text-ink">Housing</Link>
+              <Link href="/manage" className="hover:text-ink">My listings</Link>
+              <Link href="/admin" className="hover:text-ink">Admin</Link>
+            </nav>
+          </div>
         </footer>
       </body>
     </html>

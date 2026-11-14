@@ -12,29 +12,33 @@ type Props = {
 };
 
 export function ListingCard({ id, title, priceCents, category, location, condition, imageUrl }: Props) {
+  const rental = (HOUSING_CATEGORIES as readonly string[]).includes(category);
   return (
     <Link
       href={`/listings/${id}`}
-      className="block overflow-hidden rounded-lg border border-line bg-white transition-shadow hover:shadow-md"
+      className="group block overflow-hidden rounded-xl border border-line bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
     >
-      <div className="relative aspect-[4/3] bg-line/60">
+      <div className="relative aspect-[4/3] overflow-hidden bg-line/60">
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+          <img
+            src={imageUrl}
+            alt=""
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
         ) : (
           <div className="grid h-full place-items-center text-muted">No photo</div>
         )}
-        <span className="absolute bottom-3 left-3 rounded-sm bg-tag px-2.5 py-1 font-display text-lg font-bold text-ink">
+        <span className="absolute bottom-3 left-3 -rotate-2 rounded-md bg-tag px-3 py-1 font-display text-lg font-bold text-ink shadow">
           {formatListingPrice(priceCents, category)}
         </span>
       </div>
       <div className="p-4">
-        <h3 className="line-clamp-2 text-lg font-semibold">{title}</h3>
+        <h3 className="line-clamp-2 text-lg font-semibold group-hover:text-brand">{title}</h3>
         <div className="mt-1 flex items-center justify-between gap-2 text-sm text-muted">
           <span className="truncate">{location}</span>
-          <span className="shrink-0">
-            {(HOUSING_CATEGORIES as readonly string[]).includes(category) ? category : condition}
-          </span>
+          <span className="shrink-0 rounded-full bg-paper px-2 py-0.5">{rental ? category : condition}</span>
         </div>
       </div>
     </Link>

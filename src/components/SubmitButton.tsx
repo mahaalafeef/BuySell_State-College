@@ -6,14 +6,16 @@ export function SubmitButton({
   children,
   pendingText = "Saving…",
   className = "btn-primary",
+  disabled = false,
 }: {
   children: React.ReactNode;
   pendingText?: string;
   className?: string;
+  disabled?: boolean;
 }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className={className}>
+    <button type="submit" disabled={pending || disabled} className={className}>
       {pending ? pendingText : children}
     </button>
   );

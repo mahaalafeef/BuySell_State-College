@@ -22,7 +22,8 @@ model Listing {
   category        String
   condition       String
   location        String
-  imageUrl        String?
+  imageUrl        String? // cover photo (first of `images`)
+  images          String[]      @default([])
   contact         String // shown publicly: how buyers reach the seller
   phone           String // private: last 10 digits, used to prove ownership
   passcodeHash    String // private: scrypt hash

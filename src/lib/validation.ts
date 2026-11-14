@@ -11,10 +11,9 @@ const base = z.object({
     "Choose a condition",
   ),
   location: z.string().trim().min(2, "Enter a town or neighborhood").max(100),
-  imageUrl: z
-    .string()
-    .trim()
-    .refine((v) => v === "" || /^https?:\/\/\S+$/i.test(v), "Enter a full link starting with https://"),
+  images: z
+    .array(z.string().url().refine((u) => u.startsWith("https://"), "Photo links must be https"))
+    .max(5, "You can add up to 5 photos"),
   contact: z.string().trim().min(3, "Tell buyers how to reach you").max(200),
   phone: z.string().trim().min(1, "Enter your phone number"),
 });

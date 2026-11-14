@@ -2,8 +2,8 @@
 
 import type { ListingStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { notifyAdminPending } from "@/lib/email";
 import { redirect } from "next/navigation";
+import { notifyAdminPending } from "@/lib/email";
 import { LOCK_MINUTES, MAX_FAILED_ATTEMPTS } from "@/lib/config";
 import { db } from "@/lib/db";
 import { hashPasscode, normalizePhone, safeEqual, verifyPasscode } from "@/lib/security";
@@ -25,6 +25,14 @@ export type FormState =
       values?: Record<string, string>;
     }
   | undefined;
+
+/** Form fields as an object. Photos repeat under one name, so they are collected into a list. */
+function rawForm(fd: FormData) {
+  return {
+    ...Object.fromEntries(fd),
+    images: fd.getAll("images").filter((x): x is string => typeof x === "string" && x !== ""),
+  };
+}
 
 function formValues(fd: FormData): Record<string, string> {
   const out: Record<string, string> = {};
@@ -61,7 +69,7 @@ export async function createListing(_prev: FormState, fd: FormData): Promise<For
   if (String(fd.get("website") ?? "") !== "") redirect("/");
 
   const values = formValues(fd);
-  const parsed = createSchema.safeParse(Object.fromEntries(fd));
+  const parsed = createSchema.safeParse(rawForm(fd));
   if (!parsed.success) return { fieldErrors: parsed.error.flatten().fieldErrors, values };
 
   const phone = normalizePhone(parsed.data.phone);
@@ -76,14 +84,15 @@ export async function createListing(_prev: FormState, fd: FormData): Promise<For
       category: d.category,
       condition: d.condition,
       location: d.location,
-      imageUrl: d.imageUrl || null,
+      images: d.images,
+      imageUrl: d.images[0] ?? null,
       contact: d.contact,
       phone,
       passcodeHash: hashPasscode(d.passcode),
       status: await statusAfterChange(null),
     },
   });
-  
+
   if (listing.status === "PENDING") await notifyAdminPending(listing, "new");
   await updateUserSession({ addId: listing.id }); // let them edit right away
   refresh();
@@ -153,14 +162,14 @@ export async function updateListing(id: string, _prev: FormState, fd: FormData):
   const listing = await requireOwner(id);
 
   const values = formValues(fd);
-  const parsed = editSchema.safeParse(Object.fromEntries(fd));
+  const parsed = editSchema.safeParse(rawForm(fd));
   if (!parsed.success) return { fieldErrors: parsed.error.flatten().fieldErrors, values };
 
   const phone = normalizePhone(parsed.data.phone);
   if (!phone) return { fieldErrors: { phone: ["Enter a valid phone number"] }, values };
 
   const d = parsed.data;
-  const updated = await db.listing.update({ 
+  const updated = await db.listing.update({
     where: { id },
     data: {
       title: d.title,
@@ -169,7 +178,8 @@ export async function updateListing(id: string, _prev: FormState, fd: FormData):
       category: d.category,
       condition: d.condition,
       location: d.location,
-      imageUrl: d.imageUrl || null,
+      images: d.images,
+      imageUrl: d.images[0] ?? null,
       contact: d.contact,
       phone,
       ...(d.passcode ? { passcodeHash: hashPasscode(d.passcode) } : {}),

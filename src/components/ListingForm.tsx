@@ -1,14 +1,16 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import type { FormState } from "@/app/actions";
 import { CONDITIONS, HOUSING_CATEGORIES, RENTAL_CONDITION, SALE_CATEGORIES } from "@/lib/config";
+import { PhotoUploader } from "./PhotoUploader";
 import { SubmitButton } from "./SubmitButton";
 
 type Props = {
   mode: "create" | "edit";
   action: (prev: FormState, fd: FormData) => Promise<FormState>;
   initial?: Record<string, string>;
+  initialImages?: string[];
   kind?: "item" | "housing"; // edit mode works it out from the listing's category
 };
 
@@ -41,8 +43,9 @@ function Field({
   );
 }
 
-export function ListingForm({ mode, action, initial = {}, kind }: Props) {
+export function ListingForm({ mode, action, initial = {}, initialImages = [], kind }: Props) {
   const [state, formAction] = useActionState(action, undefined);
+  const [uploading, setUploading] = useState(false);
   const v = { ...initial, ...state?.values };
   const housing =
     (kind ?? ((HOUSING_CATEGORIES as readonly string[]).includes(v.category ?? "") ? "housing" : "item")) === "housing";
@@ -127,22 +130,7 @@ export function ListingForm({ mode, action, initial = {}, kind }: Props) {
         <input id="location" name="location" required defaultValue={v.location} className="input" {...a11y("location")} />
       </Field>
 
-      <Field
-        label="Photo link (optional)"
-        name="imageUrl"
-        hint="Paste a link to a photo. Photo uploads can be added later."
-        error={err("imageUrl")}
-      >
-        <input
-          id="imageUrl"
-          name="imageUrl"
-          type="url"
-          placeholder="https://"
-          defaultValue={v.imageUrl}
-          className="input"
-          {...a11y("imageUrl")}
-        />
-      </Field>
+      <PhotoUploader initial={initialImages} onBusyChange={setUploading} error={err("images")} />
 
       <Field
         label="How buyers can reach you"
@@ -206,7 +194,7 @@ export function ListingForm({ mode, action, initial = {}, kind }: Props) {
         </label>
       </div>
 
-      <SubmitButton pendingText={mode === "create" ? "Posting…" : "Saving…"}>
+      <SubmitButton disabled={uploading} pendingText={mode === "create" ? "Posting…" : "Saving…"}>
         {mode === "create" ? "Post listing" : "Save changes"}
       </SubmitButton>
     </form>

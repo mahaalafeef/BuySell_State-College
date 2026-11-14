@@ -69,7 +69,12 @@ export default async function EditListing({
         </form>
       </div>
 
-      <ListingForm mode="edit" action={updateListing.bind(null, listing.id)} initial={initial} />
+      <ListingForm
+        mode="edit"
+        action={updateListing.bind(null, listing.id)}
+        initial={initial}
+        initialImages={listing.images.length ? listing.images : listing.imageUrl ? [listing.imageUrl] : []}
+      />
     </div>
   );
 }

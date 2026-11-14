@@ -30,7 +30,7 @@ export function ListingCard({ id, title, priceCents, category, location, conditi
         ) : (
           <div className="grid h-full place-items-center text-muted">No photo</div>
         )}
-        <span className="absolute bottom-3 left-3 -rotate-2 rounded-md bg-tag px-3 py-1 font-display text-lg font-bold text-ink shadow">
+        <span className="absolute bottom-3 left-3 -rotate-2 rounded-md sticker px-3 py-1 font-display text-lg font-bold shadow">
           {formatListingPrice(priceCents, category)}
         </span>
       </div>

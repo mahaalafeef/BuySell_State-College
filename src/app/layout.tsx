@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: "Things for sale and housing, listed by the people offering them.",
 };
 
-export const viewport: Viewport = { themeColor: "#0E5E6F" };
+export const viewport: Viewport = { themeColor: "#2B5D8C" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

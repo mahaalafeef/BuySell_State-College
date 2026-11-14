@@ -5,12 +5,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#17212B",
-        paper: "#F3F6F7",
-        line: "#D3DBE0",
-        muted: "#586873",
-        brand: { DEFAULT: "#0E5E6F", dark: "#0A4654" },
-        tag: "#F4C542",
+        ink: "#10243C", // deep navy
+        paper: "#EEF2F6", // cool silver-white
+        line: "#C9D3DE", // silver border
+        muted: "#4F6178",
+        brand: { DEFAULT: "#2B5D8C", dark: "#1D4469" }, // steel blue
+        tag: "#D5DDE7", // silver
         danger: "#B3261E",
         ok: "#1E7A4F",
       },

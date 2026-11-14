@@ -4,8 +4,8 @@
 
 @layer base {
   html {
-    background: #f3f6f7;
-    color: #17212b;
+    background: #eef2f6;
+    color: #10243c;
   }
   body {
     font-family: var(--font-body), system-ui, sans-serif;
@@ -21,7 +21,7 @@
     line-height: 1.15;
   }
   :focus-visible {
-    outline: 3px solid #0e5e6f;
+    outline: 3px solid #2b5d8c;
     outline-offset: 2px;
   }
 }
@@ -48,6 +48,11 @@
   }
   .btn-danger {
     @apply btn border border-danger/40 bg-white text-danger hover:bg-danger/5;
+  }
+  .sticker {
+    background: linear-gradient(135deg, #ffffff 0%, #d5dde7 100%);
+    border: 1px solid #b8c3d0;
+    color: #10243c;
   }
   .container-page {
     @apply mx-auto w-full max-w-6xl px-4 sm:px-6;

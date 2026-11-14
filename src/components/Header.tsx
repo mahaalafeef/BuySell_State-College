@@ -7,7 +7,7 @@ export function Header() {
       <div className="container-page flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-2.5">
         <Link href="/" className="flex items-center gap-2.5" aria-label={`${SITE_NAME} home`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={LOGO_SRC} alt={SHOW_SITE_NAME_WITH_LOGO ? "" : SITE_NAME} className="h-10 w-auto" />
+          <img src={LOGO_SRC} alt={SHOW_SITE_NAME_WITH_LOGO ? "" : SITE_NAME} className="h-11 w-auto" />
           {SHOW_SITE_NAME_WITH_LOGO && (
             <span className="font-display text-xl font-extrabold tracking-tight text-brand">{SITE_NAME}</span>
           )}

@@ -59,7 +59,7 @@ export default async function ListingPage({ params }: Params) {
 
       <div className="space-y-5">
         {(owner || admin) && listing.status !== "APPROVED" && (
-          <div className="rounded-lg bg-tag/30 p-3">
+          <div className="rounded-lg bg-amber-100 p-3 text-amber-900">
             <StatusBadge status={listing.status} />
             {listing.status === "REJECTED" && listing.rejectionReason && (
               <p className="mt-1 text-sm">Reason: {listing.rejectionReason}</p>
@@ -70,7 +70,7 @@ export default async function ListingPage({ params }: Params) {
 
         <div>
           <h1 className="text-3xl font-bold">{listing.title}</h1>
-          <p className="mt-2 inline-block rounded-sm bg-tag px-3 py-1 font-display text-2xl font-bold">
+          <p className="mt-2 inline-block rounded-md sticker px-3 py-1 font-display text-2xl font-bold">
             {listing.status === "SOLD" ? "Sold" : formatListingPrice(listing.priceCents, listing.category)}
           </p>
         </div>

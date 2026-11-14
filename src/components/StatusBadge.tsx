@@ -1,5 +1,5 @@
 const styles: Record<string, string> = {
-  PENDING: "bg-tag/30 text-ink",
+  PENDING: "bg-amber-100 text-amber-900",
   APPROVED: "bg-ok/10 text-ok",
   REJECTED: "bg-danger/10 text-danger",
   SOLD: "bg-line text-muted",

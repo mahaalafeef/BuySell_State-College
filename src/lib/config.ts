@@ -2,7 +2,7 @@
 
 export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "Marketplace";
 // Logo: put your file in the "public" folder and set its name here (e.g. "/logo.png").
-export const LOGO_SRC = "/logo.svg";
+export const LOGO_SRC = "/logo.png";
 // Set to false if your logo already includes the site name.
 export const SHOW_SITE_NAME_WITH_LOGO = true;
 

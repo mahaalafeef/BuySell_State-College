@@ -12,9 +12,9 @@ const GREETING: Msg = {
   content: "Hi! I can answer questions about buying, selling, and housing on this site. What do you need help with?",
 };
 const SUGGESTIONS = ["How do I post a listing?", "How do I edit my listing?", "How does approval work?"];
-const SUPPORT_WHATSAPP = (process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP || "").replace(/\D/g, "");
 
-export function ChatWidget() {
+// whatsappEnabled is decided on the server, so the number itself never ships to the browser
+export function ChatWidget({ whatsappEnabled = false }: { whatsappEnabled?: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"chat" | "human">("chat");
@@ -176,13 +176,21 @@ export function ChatWidget() {
           </div>
         </>
       ) : (
-        <SupportForm transcript={transcript} onBack={() => setView("chat")} />
+        <SupportForm transcript={transcript} whatsappEnabled={whatsappEnabled} onBack={() => setView("chat")} />
       )}
     </section>
   );
 }
 
-function SupportForm({ transcript, onBack }: { transcript: string; onBack: () => void }) {
+function SupportForm({
+  transcript,
+  whatsappEnabled,
+  onBack,
+}: {
+  transcript: string;
+  whatsappEnabled: boolean;
+  onBack: () => void;
+}) {
   const [support, supportAction] = useActionState(submitSupport, undefined);
 
   return (
@@ -234,11 +242,11 @@ function SupportForm({ transcript, onBack }: { transcript: string; onBack: () =>
           <SubmitButton pendingText="Sending…" className="btn-primary w-full">
             Send message
           </SubmitButton>
-          {SUPPORT_WHATSAPP && (
+          {whatsappEnabled && (
             <a
-              href={`https://wa.me/${SUPPORT_WHATSAPP}`}
+              href="/support/whatsapp"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="nofollow noopener noreferrer"
               className="btn-ghost w-full"
             >
               Or message us on WhatsApp

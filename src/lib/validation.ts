@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CATEGORIES, CONDITIONS, RENTAL_CONDITION } from "./config";
+import { normalizeWhatsapp } from "./whatsapp";
 
 const base = z.object({
   title: z.string().trim().min(3, "Enter at least 3 characters").max(100, "Keep it under 100 characters"),
@@ -15,6 +16,14 @@ const base = z.object({
     .array(z.string().url().refine((u) => u.startsWith("https://"), "Photo links must be https"))
     .max(5, "You can add up to 5 photos"),
   contact: z.string().trim().min(3, "Tell buyers how to reach you").max(200),
+  whatsapp: z
+    .string()
+    .trim()
+    .max(60)
+    .refine(
+      (v) => normalizeWhatsapp(v) !== undefined,
+      "Use a number with country code (+1 555 123 4567) or a WhatsApp username",
+    ),
   phone: z.string().trim().min(1, "Enter your phone number"),
 });
 

@@ -92,6 +92,16 @@ export default async function ListingPage({ params }: Params) {
           <div className="rounded-lg border border-line bg-white p-4">
             <p className="font-semibold">Contact the seller</p>
             <p className="mt-1 break-words">{listing.contact}</p>
+            {listing.whatsapp && listing.status === "APPROVED" && (
+              <a
+                href={`/contact/${listing.id}`}
+                target="_blank"
+                rel="nofollow noopener noreferrer"
+                className="btn-primary mt-3"
+              >
+                Message on WhatsApp
+              </a>
+            )}
           </div>
         )}
 

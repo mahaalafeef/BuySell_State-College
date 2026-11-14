@@ -25,6 +25,7 @@ model Listing {
   imageUrl        String? // cover photo (first of `images`)
   images          String[]      @default([])
   contact         String // shown publicly: how buyers reach the seller
+  whatsapp        String? // public: WhatsApp number (digits with country code) or username
   phone           String // private: last 10 digits, used to prove ownership
   passcodeHash    String // private: scrypt hash
   status          ListingStatus @default(PENDING)

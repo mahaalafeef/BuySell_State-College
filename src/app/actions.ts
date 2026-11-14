@@ -4,6 +4,7 @@ import type { ListingStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { notifyAdminPending } from "@/lib/email";
+import { normalizeWhatsapp } from "@/lib/whatsapp";
 import { LOCK_MINUTES, MAX_FAILED_ATTEMPTS } from "@/lib/config";
 import { db } from "@/lib/db";
 import { hashPasscode, normalizePhone, safeEqual, verifyPasscode } from "@/lib/security";
@@ -87,6 +88,7 @@ export async function createListing(_prev: FormState, fd: FormData): Promise<For
       images: d.images,
       imageUrl: d.images[0] ?? null,
       contact: d.contact,
+      whatsapp: normalizeWhatsapp(d.whatsapp) ?? null,
       phone,
       passcodeHash: hashPasscode(d.passcode),
       status: await statusAfterChange(null),
@@ -181,6 +183,7 @@ export async function updateListing(id: string, _prev: FormState, fd: FormData):
       images: d.images,
       imageUrl: d.images[0] ?? null,
       contact: d.contact,
+      whatsapp: normalizeWhatsapp(d.whatsapp) ?? null,
       phone,
       ...(d.passcode ? { passcodeHash: hashPasscode(d.passcode) } : {}),
       status: await statusAfterChange(listing.status),

@@ -149,6 +149,23 @@ export function ListingForm({ mode, action, initial = {}, initialImages = [], ki
         />
       </Field>
 
+      <Field
+        label="WhatsApp (optional)"
+        name="whatsapp"
+        hint="Adds a “Message on WhatsApp” button. Enter your number with country code (+1 555 123 4567) or your WhatsApp username. A username keeps your number private."
+        error={err("whatsapp")}
+      >
+        <input
+          id="whatsapp"
+          name="whatsapp"
+          placeholder="+1 555 123 4567 or @username"
+          autoCapitalize="none"
+          defaultValue={v.whatsapp}
+          className="input"
+          {...a11y("whatsapp")}
+        />
+      </Field>
+
       <fieldset className="space-y-5 rounded-lg border border-line bg-white p-4">
         <legend className="px-1 font-display text-lg font-semibold">Edit access (private)</legend>
         <p className="text-sm text-muted">

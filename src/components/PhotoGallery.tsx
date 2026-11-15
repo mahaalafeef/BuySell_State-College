@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { FramedImage } from "./FramedImage";
 
 /** Swipeable photo viewer: swipe on phones, arrow buttons or keyboard arrows on computers, plus thumbnails. */
 export function PhotoGallery({ photos, title }: { photos: string[]; title: string }) {
@@ -67,14 +68,7 @@ export function PhotoGallery({ photos, title }: { photos: string[]; title: strin
               aria-label={`${i + 1} of ${count}`}
               className="aspect-[4/3] w-full shrink-0 snap-center"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={url}
-                alt={`${title}, photo ${i + 1}`}
-                draggable={false}
-                loading={i === 0 ? "eager" : "lazy"}
-                className="h-full w-full object-cover"
-              />
+              <FramedImage src={url} alt={`${title}, photo ${i + 1}`} eager={i === 0} />
             </div>
           ))}
         </div>

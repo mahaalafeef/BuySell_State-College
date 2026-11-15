@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FramedImage } from "./FramedImage";
 import { formatListingPrice, HOUSING_CATEGORIES } from "@/lib/config";
 
 type Props = {
@@ -20,13 +21,7 @@ export function ListingCard({ id, title, priceCents, category, location, conditi
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-line/60">
         {imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={imageUrl}
-            alt=""
-            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-            loading="lazy"
-          />
+          <FramedImage src={imageUrl} alt="" />
         ) : (
           <div className="grid h-full place-items-center text-muted">No photo</div>
         )}

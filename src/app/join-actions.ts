@@ -30,7 +30,7 @@ export async function submitJoin(fd: FormData): Promise<JoinState> {
   if (!(JOIN_ROLES as readonly string[]).includes(role)) fieldErrors.role = "Choose one.";
   if (!consent) fieldErrors.consent = "Please tick the box to continue.";
 
-  let bytes: Buffer | null = null;
+  let bytes: Uint8Array<ArrayBuffer> | null = null;
   if (!(proof instanceof File) || proof.size === 0) {
     fieldErrors.proof = "Please add a photo of your proof.";
   } else if (proof.type !== "image/jpeg") {
@@ -38,7 +38,7 @@ export async function submitJoin(fd: FormData): Promise<JoinState> {
   } else if (proof.size > MAX_PROOF_BYTES) {
     fieldErrors.proof = "That photo is too large. Try a smaller one.";
   } else {
-    bytes = Buffer.from(await proof.arrayBuffer());
+    bytes = new Uint8Array(await proof.arrayBuffer());
   }
 
   if (Object.keys(fieldErrors).length > 0 || !whatsapp || !bytes) {

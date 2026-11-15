@@ -96,6 +96,16 @@ export async function rejectJoin(id: string, fd: FormData) {
   refresh();
 }
 
+/** Removes an approved member's access to the site. */
+export async function revokeJoin(id: string) {
+  await requireAdmin();
+  await db.joinRequest.update({
+    where: { id },
+    data: { status: "REJECTED", decidedNote: "Access removed", decidedAt: new Date() },
+  });
+  refresh();
+}
+
 export async function deleteJoin(id: string) {
   await requireAdmin();
   await db.joinRequest.delete({ where: { id } });

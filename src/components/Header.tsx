@@ -1,7 +1,18 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { db } from "@/lib/db";
 import { LOGO_SRC, SHOW_SITE_NAME_WITH_LOGO, SITE_NAME } from "@/lib/config";
+import { getMemberId } from "@/lib/members";
+import { isAdmin } from "@/lib/session";
 
-export function Header() {
+export async function Header() {
+  // If someone's access was removed, sign them out the next time a page loads
+  const memberId = await getMemberId();
+  if (memberId && !(await isAdmin())) {
+    const row = await db.joinRequest.findUnique({ where: { id: memberId }, select: { status: true } });
+    if (row?.status !== "APPROVED") redirect("/members/revoked");
+  }
+
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur">
       <div className="container-page flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-2.5">

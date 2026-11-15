@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/PageHero";
 import { SITE_NAME } from "@/lib/config";
+import { getRequestId, memberPath } from "@/lib/members";
 
 export const metadata: Metadata = { title: "Members only" };
 
 export default async function MembersPage({ searchParams }: { searchParams: Promise<{ invalid?: string }> }) {
   const { invalid } = await searchParams;
+  const requestId = await getRequestId();
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -25,6 +27,15 @@ export default async function MembersPage({ searchParams }: { searchParams: Prom
         <p role="alert" className="rounded-xl bg-danger/10 p-4 text-danger">
           That link didn&rsquo;t work. It may be wrong or expired. Ask the admin to send you a new one.
         </p>
+      )}
+
+      {requestId && (
+        <section className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-white p-5">
+          <p className="font-semibold">You sent a request from this device.</p>
+          <Link href={memberPath(requestId)} className="btn-primary">
+            Check my request
+          </Link>
+        </section>
       )}
 
       <section className="space-y-3 rounded-xl border border-line bg-white p-5">

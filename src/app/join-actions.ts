@@ -6,11 +6,12 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { notifyAdminJoin } from "@/lib/email";
 import { JOIN_ROLES, MAX_PROOF_BYTES } from "@/lib/join";
+import { memberPath, setRequestCookie } from "@/lib/members";
 import { checkLimit, ipHash, recordEvent } from "@/lib/ratelimit";
 import { isAdmin } from "@/lib/session";
 import { normalizeWhatsapp } from "@/lib/whatsapp";
 
-export type JoinState = { ok?: boolean; error?: string; fieldErrors?: Record<string, string> } | undefined;
+export type JoinState = { ok?: boolean; path?: string; error?: string; fieldErrors?: Record<string, string> } | undefined;
 
 /** Public: someone asks to join the group. */
 export async function submitJoin(fd: FormData): Promise<JoinState> {
@@ -55,13 +56,14 @@ export async function submitJoin(fd: FormData): Promise<JoinState> {
   const existing = await db.joinRequest.count({ where: { whatsapp, status: "PENDING" } });
   if (existing > 0) return { ok: true };
 
-  await db.joinRequest.create({
+  const created = await db.joinRequest.create({
     data: { name, whatsapp, role, note: note || null, proof: bytes, hasProof: true },
   });
+  await setRequestCookie(created.id); // lets them check on it later from this browser
   await notifyAdminJoin({ name, role });
   revalidatePath("/admin/join");
   revalidatePath("/admin");
-  return { ok: true };
+  return { ok: true, path: memberPath(created.id) };
 }
 
 /* ---------------- Admin ---------------- */

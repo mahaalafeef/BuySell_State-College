@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { submitJoin, type JoinState } from "@/app/join-actions";
 import { JOIN_ROLES } from "@/lib/join";
@@ -51,6 +52,41 @@ function Field({ label, name, error, hint, children }: { label: string; name: st
   );
 }
 
+function Sent({ path }: { path: string }) {
+  const [copied, setCopied] = useState(false);
+  const link = `${window.location.origin}${path}`;
+  return (
+    <div role="status" className="space-y-4 rounded-xl bg-ok/10 p-5">
+      <p className="text-lg font-semibold text-ok">Thanks! Your request was sent.</p>
+      <p>
+        <strong>Save your personal link.</strong> Use it to check your request. Once you&rsquo;re approved, the same link
+        lets you choose your password and log in. Please don&rsquo;t share it.
+      </p>
+      <p className="break-all rounded-md bg-white p-3 text-sm">{link}</p>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          className="btn-primary"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(link);
+              setCopied(true);
+            } catch {
+              /* the link is shown above, so it can be copied by hand */
+            }
+          }}
+        >
+          {copied ? "Copied!" : "Copy link"}
+        </button>
+        <Link href={path} className="btn-ghost">
+          Check my request
+        </Link>
+      </div>
+      <p className="text-sm text-muted">Tip: bookmark this page or send the link to yourself on WhatsApp.</p>
+    </div>
+  );
+}
+
 export function JoinForm() {
   const [proof, setProof] = useState<{ blob: Blob; url: string } | null>(null);
   const [proofError, setProofError] = useState<string>();
@@ -91,9 +127,11 @@ export function JoinForm() {
   }
 
   if (state?.ok) {
-    return (
+    return state.path ? (
+      <Sent path={state.path} />
+    ) : (
       <p role="status" className="rounded-xl bg-ok/10 p-5 text-lg text-ok">
-        Thanks! Your request was sent. We&rsquo;ll review it and message you on WhatsApp.
+        We already have a request from you. Open the personal link you saved to check on it.
       </p>
     );
   }

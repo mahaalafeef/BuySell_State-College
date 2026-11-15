@@ -38,6 +38,29 @@ export function memberToken(id: string): string {
   return signToken({ m: id }, MEMBER_DAYS * 86400);
 }
 
+export const REQUEST_COOKIE = "mk_request";
+
+/** The relative personal link (also works as the applicant's status page before approval). */
+export function memberPath(id: string): string {
+  return `/enter?m=${encodeURIComponent(id)}&c=${memberCode(id)}`;
+}
+
+/** Remembers an applicant's request in this browser, so they can check on it later. */
+export async function setRequestCookie(id: string) {
+  (await cookies()).set(REQUEST_COOKIE, signToken({ r: id }, 60 * 86400), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 86400,
+  });
+}
+
+export async function getRequestId(): Promise<string | null> {
+  const jar = await cookies();
+  return readToken<{ r?: string }>(jar.get(REQUEST_COOKIE)?.value)?.r ?? null;
+}
+
 /** Server actions only: signs a member in on this device. */
 export async function setMemberCookie(id: string) {
   (await cookies()).set(MEMBER_COOKIE, memberToken(id), {

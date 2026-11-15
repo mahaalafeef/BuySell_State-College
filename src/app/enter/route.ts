@@ -13,7 +13,12 @@ export async function GET(request: Request) {
 
   if (!id || !code || !codeMatches(id, code)) return fail;
   const row = await db.joinRequest.findUnique({ where: { id }, select: { status: true, passwordHash: true } });
-  if (row?.status !== "APPROVED") return fail;
+  if (!row) return fail;
+
+  // Not approved (yet): show where their request stands
+  if (row.status !== "APPROVED") {
+    return NextResponse.redirect(new URL(`/members/status?m=${encodeURIComponent(id)}&c=${encodeURIComponent(code)}`, request.url));
+  }
 
   // First visit: let them choose a password
   if (!row.passwordHash) {

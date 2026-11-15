@@ -10,7 +10,7 @@ export function PhotoGallery({ photos, title }: { photos: string[]; title: strin
 
   if (count === 0) {
     return (
-      <div className="grid aspect-[4/3] min-w-0 place-items-center rounded-lg border border-line bg-white text-muted">
+      <div className="grid aspect-[4/3] min-w-0 place-items-center rounded-2xl bg-paper text-muted shadow-sm">
         No photo
       </div>
     );
@@ -42,7 +42,7 @@ export function PhotoGallery({ photos, title }: { photos: string[]; title: strin
   }
 
   const arrow =
-    "absolute top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-2xl leading-none text-ink shadow transition hover:bg-white";
+    "absolute top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-2xl leading-none text-ink shadow-md transition hover:bg-white";
 
   return (
     <div className="min-w-0 space-y-3">
@@ -50,7 +50,7 @@ export function PhotoGallery({ photos, title }: { photos: string[]; title: strin
         role="region"
         aria-roledescription="carousel"
         aria-label={`Photos of ${title}`}
-        className="relative overflow-hidden rounded-lg border border-line bg-white"
+        className="relative overflow-hidden rounded-2xl bg-paper shadow-md"
       >
         <div
           ref={scroller}
@@ -65,7 +65,7 @@ export function PhotoGallery({ photos, title }: { photos: string[]; title: strin
               role="group"
               aria-roledescription="slide"
               aria-label={`${i + 1} of ${count}`}
-              className="aspect-[4/3] w-full shrink-0 snap-center bg-paper"
+              className="aspect-[4/3] w-full shrink-0 snap-center"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -73,7 +73,7 @@ export function PhotoGallery({ photos, title }: { photos: string[]; title: strin
                 alt={`${title}, photo ${i + 1}`}
                 draggable={false}
                 loading={i === 0 ? "eager" : "lazy"}
-                className="h-full w-full object-contain"
+                className="h-full w-full object-cover"
               />
             </div>
           ))}
@@ -82,18 +82,18 @@ export function PhotoGallery({ photos, title }: { photos: string[]; title: strin
         {count > 1 && (
           <>
             {index > 0 && (
-              <button type="button" aria-label="Previous photo" onClick={() => goTo(index - 1)} className={`${arrow} left-2`}>
+              <button type="button" aria-label="Previous photo" onClick={() => goTo(index - 1)} className={`${arrow} left-3`}>
                 ‹
               </button>
             )}
             {index < count - 1 && (
-              <button type="button" aria-label="Next photo" onClick={() => goTo(index + 1)} className={`${arrow} right-2`}>
+              <button type="button" aria-label="Next photo" onClick={() => goTo(index + 1)} className={`${arrow} right-3`}>
                 ›
               </button>
             )}
             <p
               aria-live="polite"
-              className="absolute bottom-2 right-2 rounded-full bg-ink/70 px-2.5 py-0.5 text-sm font-semibold text-white"
+              className="absolute bottom-3 right-3 rounded-full bg-ink/70 px-2.5 py-0.5 text-sm font-semibold text-white"
             >
               {index + 1} / {count}
             </p>
@@ -102,7 +102,7 @@ export function PhotoGallery({ photos, title }: { photos: string[]; title: strin
       </div>
 
       {count > 1 && (
-        <ul className="grid grid-cols-5 gap-2">
+        <ul className="grid grid-cols-5 gap-3">
           {photos.map((url, i) => (
             <li key={url}>
               <button
@@ -110,13 +110,17 @@ export function PhotoGallery({ photos, title }: { photos: string[]; title: strin
                 onClick={() => goTo(i)}
                 aria-label={`Show photo ${i + 1}`}
                 aria-current={i === index ? "true" : undefined}
-                className={`block aspect-square w-full overflow-hidden rounded-md border bg-white ${
-                  i === index ? "border-brand ring-2 ring-brand" : "border-line opacity-80 hover:opacity-100"
+                className={`block aspect-square w-full overflow-hidden rounded-lg transition ${
+                  i === index ? "opacity-100" : "opacity-55 hover:opacity-100"
                 }`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={url} alt="" loading="lazy" className="h-full w-full object-cover" />
               </button>
+              <span
+                aria-hidden
+                className={`mx-auto mt-1.5 block h-0.5 w-6 rounded-full ${i === index ? "bg-brand" : "bg-transparent"}`}
+              />
             </li>
           ))}
         </ul>

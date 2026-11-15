@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { memberLogout } from "@/app/member-actions";
 import { db } from "@/lib/db";
 import { LOGO_SRC, SHOW_SITE_NAME_WITH_LOGO, SITE_NAME } from "@/lib/config";
 import { getMemberId } from "@/lib/members";
@@ -36,6 +37,11 @@ export async function Header() {
           <Link href="/sell" className="btn-primary">
             Post a listing
           </Link>
+          {memberId && (
+            <form action={memberLogout}>
+              <button className="btn text-ink hover:bg-paper">Log out</button>
+            </form>
+          )}
         </nav>
       </div>
     </header>

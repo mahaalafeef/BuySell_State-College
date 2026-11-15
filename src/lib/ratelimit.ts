@@ -12,7 +12,7 @@ export function ipHash(headers: { get(name: string): string | null }): string {
 
 /** Returns "ip" or "daily" if a limit is reached, otherwise null. */
 export async function checkLimit(
-  kind: "chat" | "support" | "join",
+  kind: "chat" | "support" | "join" | "login",
   hash: string,
   perHour: number,
   dailyCap?: number,
@@ -31,7 +31,7 @@ export async function checkLimit(
   return null;
 }
 
-export async function recordEvent(kind: "chat" | "support" | "join", hash: string) {
+export async function recordEvent(kind: "chat" | "support" | "join" | "login", hash: string) {
   await db.chatEvent.create({ data: { kind, ipHash: hash } });
   // keep the table small
   await db.chatEvent.deleteMany({ where: { createdAt: { lt: new Date(Date.now() - 2 * 86_400_000) } } });

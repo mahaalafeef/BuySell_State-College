@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isValidToken } from "@/lib/edgeToken";
 
 // Pages anyone can open. Everything else needs a member (or admin) sign-in cookie.
-const OPEN = ["/join", "/members", "/enter", "/admin", "/api/chat", "/support/whatsapp"];
+const OPEN = ["/join", "/login", "/members", "/enter", "/admin", "/api/chat", "/support/whatsapp"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;

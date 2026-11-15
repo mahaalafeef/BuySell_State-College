@@ -12,8 +12,13 @@ export async function GET(request: Request) {
   const fail = NextResponse.redirect(new URL("/members?invalid=1", request.url));
 
   if (!id || !code || !codeMatches(id, code)) return fail;
-  const row = await db.joinRequest.findUnique({ where: { id }, select: { status: true } });
+  const row = await db.joinRequest.findUnique({ where: { id }, select: { status: true, passwordHash: true } });
   if (row?.status !== "APPROVED") return fail;
+
+  // First visit: let them choose a password
+  if (!row.passwordHash) {
+    return NextResponse.redirect(new URL(`/members/setup?m=${encodeURIComponent(id)}&c=${encodeURIComponent(code)}`, request.url));
+  }
 
   const res = NextResponse.redirect(new URL("/", request.url));
   res.cookies.set(MEMBER_COOKIE, memberToken(id), {

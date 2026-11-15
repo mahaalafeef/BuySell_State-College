@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { approveJoin, deleteJoin, rejectJoin, revokeJoin } from "@/app/join-actions";
+import { approveJoin, deleteJoin, rejectJoin, resetMemberPassword, revokeJoin } from "@/app/join-actions";
 import { SITE_NAME } from "@/lib/config";
 import { db } from "@/lib/db";
-import { memberLink } from "@/lib/members";
+import { memberLink, siteUrl } from "@/lib/members";
 import { isAdmin } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Join requests" };
@@ -30,7 +30,7 @@ export default async function JoinInbox({ searchParams }: { searchParams: Promis
       where: { status: tab },
       orderBy: { createdAt: "desc" },
       take: 100,
-      select: { id: true, name: true, whatsapp: true, role: true, note: true, hasProof: true, decidedNote: true, createdAt: true },
+      select: { id: true, name: true, whatsapp: true, role: true, note: true, hasProof: true, decidedNote: true, passwordHash: true, createdAt: true },
     }),
     db.joinRequest.groupBy({ by: ["status"], _count: { _all: true } }),
   ]);
@@ -89,6 +89,9 @@ export default async function JoinInbox({ searchParams }: { searchParams: Promis
               <p className="mt-2">
                 <span className="font-semibold">WhatsApp:</span> {show(r.whatsapp)}
               </p>
+              {tab === "APPROVED" && (
+                <p className="mt-1 text-sm text-muted">{r.passwordHash ? "Password set." : "Hasn't chosen a password yet."}</p>
+              )}
               {r.note && <p className="mt-1 whitespace-pre-wrap text-sm">{r.note}</p>}
               {r.decidedNote && <p className="mt-1 text-sm text-danger">Reason: {r.decidedNote}</p>}
 
@@ -126,7 +129,7 @@ export default async function JoinInbox({ searchParams }: { searchParams: Promis
                   <a
                     href={chat(
                       r.whatsapp,
-                      `Hi ${r.name}! You're approved for ${SITE_NAME}. Open the site with your personal link (please don't share it): ${memberLink(r.id)}${groupLink ? `\n\nAnd join the group here: ${groupLink}` : ""}`,
+                      `Hi ${r.name}! You're approved for ${SITE_NAME}.\n\n1) Open this link to choose your password (please don't share it): ${memberLink(r.id)}\n\n2) After that, log in any time at ${siteUrl()}/login with your WhatsApp number and password.${groupLink ? `\n\nAnd join the group here: ${groupLink}` : ""}`,
                     )}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -134,6 +137,11 @@ export default async function JoinInbox({ searchParams }: { searchParams: Promis
                   >
                     Send access link on WhatsApp
                   </a>
+                )}
+                {tab === "APPROVED" && r.passwordHash && (
+                  <form action={resetMemberPassword.bind(null, r.id)}>
+                    <button className="btn-ghost">Reset password</button>
+                  </form>
                 )}
                 {tab === "APPROVED" && (
                   <form action={revokeJoin.bind(null, r.id)}>

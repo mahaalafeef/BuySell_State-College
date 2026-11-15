@@ -106,6 +106,13 @@ export async function revokeJoin(id: string) {
   refresh();
 }
 
+/** Clears a member's password, so their personal link lets them choose a new one. */
+export async function resetMemberPassword(id: string) {
+  await requireAdmin();
+  await db.joinRequest.update({ where: { id }, data: { passwordHash: null, failedAttempts: 0, lockedUntil: null } });
+  refresh();
+}
+
 export async function deleteJoin(id: string) {
   await requireAdmin();
   await db.joinRequest.delete({ where: { id } });

@@ -38,6 +38,17 @@ export function memberToken(id: string): string {
   return signToken({ m: id }, MEMBER_DAYS * 86400);
 }
 
+/** Server actions only: signs a member in on this device. */
+export async function setMemberCookie(id: string) {
+  (await cookies()).set(MEMBER_COOKIE, memberToken(id), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: MEMBER_DAYS * 86400,
+  });
+}
+
 export async function getMemberId(): Promise<string | null> {
   const jar = await cookies();
   return readToken<{ m?: string }>(jar.get(MEMBER_COOKIE)?.value)?.m ?? null;

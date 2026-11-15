@@ -11,9 +11,14 @@ export default async function MembersPage({ searchParams }: { searchParams: Prom
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <PageHero title="Members only" subtitle={`${SITE_NAME} is for people connected to Penn State or living in State College.`}>
-        <Link href="/join" className="btn bg-white text-brand hover:bg-white/90">
-          Request to join
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/login" className="btn bg-white text-brand hover:bg-white/90">
+            Member log in
+          </Link>
+          <Link href="/join" className="btn border border-white/40 text-white hover:bg-white/10">
+            Request to join
+          </Link>
+        </div>
       </PageHero>
 
       {invalid && (
@@ -27,9 +32,10 @@ export default async function MembersPage({ searchParams }: { searchParams: Prom
         <ol className="list-decimal space-y-2 pl-5">
           <li>Tap &ldquo;Request to join&rdquo; and send your WhatsApp number with a photo showing your connection.</li>
           <li>We review it and message you on WhatsApp.</li>
-          <li>You get a personal link. Open it once on your phone and the site stays open for you.</li>
+          <li>You get a personal link. Open it once to choose a password.</li>
+          <li>After that, log in any time with your WhatsApp number and password.</li>
         </ol>
-        <p className="text-sm text-muted">Already approved? Open the personal link we sent you on WhatsApp.</p>
+        <p className="text-sm text-muted">Already approved? Use &ldquo;Member log in&rdquo;. First time? Open the personal link we sent you on WhatsApp.</p>
       </section>
     </div>
   );

@@ -80,6 +80,9 @@ model JoinRequest {
   hasProof    Boolean   @default(false)
   status      String    @default("PENDING") // PENDING, APPROVED, REJECTED
   decidedNote String?
+  passwordHash   String? // member's password (scrypt hash), set from their personal link
+  failedAttempts Int       @default(0)
+  lockedUntil    DateTime?
   createdAt   DateTime  @default(now())
   decidedAt   DateTime?
 

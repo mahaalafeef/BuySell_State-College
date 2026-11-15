@@ -62,3 +62,11 @@ A phone number is easy to learn, so anyone who knows a seller's number can edit 
 - Rate limiting on posting (Upstash Ratelimit) and a CAPTCHA
 - Email or SMS notifications to you when a listing is waiting
 - Switch from `prisma db push` to `prisma migrate` once you have real data
+
+## Members-only contact details
+
+Seller contact details (the contact text and the WhatsApp button/redirect) are shown only to **approved members** and the admin.
+
+- `src/middleware.ts` blocks the whole site for anyone without a valid member sign-in cookie.
+- `src/lib/memberAccess.ts` (`hasMemberAccess`) is the real check. It looks up the member in the database on every request, so removing someone in `/admin/join` cuts off contact details immediately, even though their cookie is valid for up to 90 days.
+- It is used in `src/app/listings/[id]/page.tsx` and `src/app/contact/[id]/route.ts`. Use it for any new place that shows contact details.

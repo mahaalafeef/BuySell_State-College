@@ -5,6 +5,7 @@ import { PhotoGallery } from "@/components/PhotoGallery";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatListingPrice } from "@/lib/config";
 import { db } from "@/lib/db";
+import { hasMemberAccess } from "@/lib/memberAccess";
 import { canManage, isAdmin } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,7 @@ export default async function ListingPage({ params }: Params) {
 
   const owner = await canManage(listing);
   const admin = await isAdmin();
+  const isMember = await hasMemberAccess(); // approved member (checked live) or admin
   const publicStatus = listing.status === "APPROVED" || listing.status === "SOLD";
   if (!publicStatus && !owner && !admin) notFound();
 
@@ -64,22 +66,32 @@ export default async function ListingPage({ params }: Params) {
 
         <p className="max-w-prose whitespace-pre-wrap">{listing.description}</p>
 
-        {listing.status !== "SOLD" && (
-          <div className="rounded-lg border border-line bg-white p-4">
-            <p className="font-semibold">Contact the seller</p>
-            <p className="mt-1 break-words">{listing.contact}</p>
-            {listing.whatsapp && listing.status === "APPROVED" && (
-              <a
-                href={`/contact/${listing.id}`}
-                target="_blank"
-                rel="nofollow noopener noreferrer"
-                className="btn-primary mt-3"
-              >
-                Message on WhatsApp
-              </a>
-            )}
-          </div>
-        )}
+        {listing.status !== "SOLD" &&
+          (isMember ? (
+            <div className="rounded-lg border border-line bg-white p-4">
+              <p className="font-semibold">Contact the seller</p>
+              <p className="mt-1 break-words">{listing.contact}</p>
+              {listing.whatsapp && listing.status === "APPROVED" && (
+                <a
+                  href={`/contact/${listing.id}`}
+                  target="_blank"
+                  rel="nofollow noopener noreferrer"
+                  className="btn-primary mt-3"
+                >
+                  Message on WhatsApp
+                </a>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-lg border border-line bg-white p-4">
+              <p className="font-semibold">Contact details are for approved members</p>
+              <p className="mt-1 text-sm text-muted">Log in or request to join to see how to reach the seller.</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link href="/login" className="btn-primary">Member log in</Link>
+                <Link href="/join" className="btn-ghost">Request to join</Link>
+              </div>
+            </div>
+          ))}
 
         {owner && (
           <Link href={`/manage/${listing.id}`} className="btn-ghost">

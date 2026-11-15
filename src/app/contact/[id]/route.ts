@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { SITE_NAME } from "@/lib/config";
 import { db } from "@/lib/db";
+import { hasMemberAccess } from "@/lib/memberAccess";
 
 export const dynamic = "force-dynamic";
 
@@ -8,6 +9,10 @@ export const dynamic = "force-dynamic";
 // number or username never appears in the page's HTML for scrapers to collect.
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+
+  // Only approved members (checked live, so removed members are cut off at once) get sent to the seller
+  if (!(await hasMemberAccess())) return NextResponse.redirect(new URL("/members", request.url));
+
   const listing = await db.listing.findUnique({
     where: { id },
     select: { title: true, status: true, whatsapp: true },

@@ -48,7 +48,7 @@ const FAQS: Faq[] = [
   {
     keywords: ["contact", "message the seller", "reach the seller", "whatsapp", "buy this", "interested", "get in touch"],
     answer: () =>
-      "Open the listing and use the contact details shown on it. If the seller added WhatsApp, you'll also see a \"Message on WhatsApp\" button.",
+      "Open the listing and use the contact details shown on it (only approved members can see them). If the seller added WhatsApp, you'll also see a \"Message on WhatsApp\" button.",
   },
   {
     keywords: ["pay", "payment", "ship", "shipping", "scam", "safe", "safety", "fraud", "deposit", "report"],

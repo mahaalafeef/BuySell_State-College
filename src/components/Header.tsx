@@ -37,6 +37,11 @@ export async function Header() {
           <Link href="/sell" className="btn-primary">
             Post a listing
           </Link>
+          {!memberId && (
+            <Link href="/login" className="btn text-ink hover:bg-paper">
+              Member log in
+            </Link>
+          )}
           {memberId && (
             <form action={memberLogout}>
               <button className="btn text-ink hover:bg-paper">Log out</button>

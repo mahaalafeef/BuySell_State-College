@@ -5,6 +5,7 @@ import { useActionState, useState } from "react";
 import type { FormState } from "@/app/actions";
 import { CONDITIONS, HOUSING_CATEGORIES, RENTAL_CONDITION, SALE_CATEGORIES } from "@/lib/config";
 import { PhotoUploader } from "./PhotoUploader";
+import { ScreenshotImporter, type ScreenshotDraft } from "./ScreenshotImporter";
 import { SubmitButton } from "./SubmitButton";
 
 type Props = {
@@ -47,7 +48,8 @@ function Field({
 export function ListingForm({ mode, action, initial = {}, initialImages = [], kind }: Props) {
   const [state, formAction] = useActionState(action, undefined);
   const [uploading, setUploading] = useState(false);
-  const v = { ...initial, ...state?.values };
+  const [imported, setImported] = useState<ScreenshotDraft | null>(null);
+  const v = { ...initial, ...imported, ...state?.values };
   const housing =
     (kind ?? ((HOUSING_CATEGORIES as readonly string[]).includes(v.category ?? "") ? "housing" : "item")) === "housing";
   const categories: readonly string[] = housing ? HOUSING_CATEGORIES : SALE_CATEGORIES;
@@ -58,7 +60,11 @@ export function ListingForm({ mode, action, initial = {}, initialImages = [], ki
   });
 
   return (
-    <form action={formAction} className="space-y-5">
+    <div className="space-y-5">
+      {mode === "create" && kind === "item" && (
+        <ScreenshotImporter onImport={setImported} onBusyChange={setUploading} />
+      )}
+    <form key={imported?.photoUrl ?? "manual"} action={formAction} className="space-y-5">
       {state?.error && (
         <p role="alert" className="rounded-md bg-danger/10 p-3 text-danger">
           {state.error}
@@ -131,7 +137,7 @@ export function ListingForm({ mode, action, initial = {}, initialImages = [], ki
         <input id="location" name="location" required defaultValue={v.location} className="input" {...a11y("location")} />
       </Field>
 
-      <PhotoUploader initial={initialImages} onBusyChange={setUploading} error={err("images")} />
+      <PhotoUploader initial={[...initialImages, ...(imported?.photoUrl ? [imported.photoUrl] : [])]} onBusyChange={setUploading} error={err("images")} />
 
       <Field
         label="How buyers can reach you"
@@ -241,5 +247,6 @@ export function ListingForm({ mode, action, initial = {}, initialImages = [], ki
         {mode === "create" ? "Post listing" : "Save changes"}
       </SubmitButton>
     </form>
+    </div>
   );
 }

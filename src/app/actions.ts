@@ -7,6 +7,7 @@ import { notifyAdminPending } from "@/lib/email";
 import { normalizeWhatsapp } from "@/lib/whatsapp";
 import { LOCK_MINUTES, MAX_FAILED_ATTEMPTS } from "@/lib/config";
 import { db } from "@/lib/db";
+import { hasMemberAccess } from "@/lib/memberAccess";
 import { hashPasscode, normalizePhone, safeEqual, verifyPasscode } from "@/lib/security";
 import {
   canManage,
@@ -66,6 +67,7 @@ async function statusAfterChange(current: ListingStatus | null): Promise<Listing
    ===================================================================== */
 
 export async function createListing(_prev: FormState, fd: FormData): Promise<FormState> {
+  if (!(await hasMemberAccess())) return { error: "Only approved members can post listings. Please sign in." };
   // Honeypot: real people never fill this hidden field
   if (String(fd.get("website") ?? "") !== "") redirect("/");
 
@@ -94,7 +96,7 @@ export async function createListing(_prev: FormState, fd: FormData): Promise<For
       whatsapp: normalizeWhatsapp(d.whatsapp) ?? null,
       phone,
       passcodeHash: hashPasscode(d.passcode),
-      status: await statusAfterChange(null),
+      status: "PENDING",
     },
   });
 

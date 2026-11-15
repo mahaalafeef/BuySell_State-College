@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { notifyAdminJoin } from "@/lib/email";
-import { JOIN_ROLES, MAX_PROOF_BYTES } from "@/lib/join";
+import { JOIN_REQUIRES_PROOF, JOIN_ROLES, MAX_PROOF_BYTES } from "@/lib/join";
 import { memberPath, setRequestCookie } from "@/lib/members";
 import { checkLimit, ipHash, recordEvent } from "@/lib/ratelimit";
 import { isAdmin } from "@/lib/session";
@@ -32,7 +32,9 @@ export async function submitJoin(fd: FormData): Promise<JoinState> {
   if (!consent) fieldErrors.consent = "Please tick the box to continue.";
 
   let bytes: Uint8Array<ArrayBuffer> | null = null;
-  if (!(proof instanceof File) || proof.size === 0) {
+  if (!JOIN_REQUIRES_PROOF) {
+    // Proof photos are switched off: ignore any file that was sent
+  } else if (!(proof instanceof File) || proof.size === 0) {
     fieldErrors.proof = "Please add a photo of your proof.";
   } else if (proof.type !== "image/jpeg") {
     fieldErrors.proof = "Please choose a photo again. We convert it automatically.";
@@ -42,7 +44,7 @@ export async function submitJoin(fd: FormData): Promise<JoinState> {
     bytes = new Uint8Array(await proof.arrayBuffer());
   }
 
-  if (Object.keys(fieldErrors).length > 0 || !whatsapp || !bytes) {
+  if (Object.keys(fieldErrors).length > 0 || !whatsapp || (JOIN_REQUIRES_PROOF && !bytes)) {
     return { error: "Please fix the highlighted fields.", fieldErrors };
   }
 
@@ -57,7 +59,7 @@ export async function submitJoin(fd: FormData): Promise<JoinState> {
   if (existing > 0) return { ok: true };
 
   const created = await db.joinRequest.create({
-    data: { name, whatsapp, role, note: note || null, proof: bytes, hasProof: true },
+    data: { name, whatsapp, role, note: note || null, proof: bytes, hasProof: bytes !== null },
   });
   await setRequestCookie(created.id); // lets them check on it later from this browser
   await notifyAdminJoin({ name, role });

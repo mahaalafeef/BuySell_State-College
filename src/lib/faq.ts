@@ -11,7 +11,7 @@ const FAQS: Faq[] = [
   {
     keywords: ["join", "whatsapp group", "invite", "member", "membership", "join the group"],
     answer: () =>
-      "To join our WhatsApp group, open the Join page (add /join to the end of this site's address). Send a request with your WhatsApp number and a photo showing your Penn State connection or State College residency. We review each one and message you on WhatsApp with the invite.",
+      "To join our WhatsApp group, open the Join page (add /join to the end of this site's address). Send a request with your name and WhatsApp number, and tell us how you are connected to Penn State or State College. We review each one and message you on WhatsApp with the invite.",
   },
   {
     keywords: ["post", "sell", "list my", "list an", "list a", "create a listing", "add a listing", "new listing", "put up", "how do i list"],

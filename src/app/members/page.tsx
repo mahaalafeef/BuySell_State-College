@@ -41,7 +41,7 @@ export default async function MembersPage({ searchParams }: { searchParams: Prom
       <section className="space-y-3 rounded-xl border border-line bg-white p-5">
         <h2 className="text-xl font-bold">How it works</h2>
         <ol className="list-decimal space-y-2 pl-5">
-          <li>Tap &ldquo;Request to join&rdquo; and send your WhatsApp number with a photo showing your connection.</li>
+          <li>Tap &ldquo;Request to join&rdquo; and send your name and WhatsApp number, and tell us how you are connected.</li>
           <li>We review it and message you on WhatsApp.</li>
           <li>You get a personal link. Open it once to choose a password.</li>
           <li>After that, log in any time with your WhatsApp number and password.</li>

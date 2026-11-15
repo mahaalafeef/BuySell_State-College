@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { submitJoin, type JoinState } from "@/app/join-actions";
-import { JOIN_ROLES } from "@/lib/join";
+import { JOIN_REQUIRES_PROOF, JOIN_ROLES } from "@/lib/join";
 
 const TARGET_BYTES = 800 * 1024; // keep uploads small so they send quickly on mobile data
 
@@ -170,6 +170,7 @@ export function JoinForm() {
         </select>
       </Field>
 
+      {JOIN_REQUIRES_PROOF && (
       <div>
         <p className="mb-1 font-semibold">Proof of your connection</p>
         <p className="mb-3 text-sm text-muted">
@@ -205,6 +206,7 @@ export function JoinForm() {
           </p>
         )}
       </div>
+      )}
 
       <Field label="Anything else we should know? (optional)" name="note">
         <textarea id="join-note" name="note" rows={3} maxLength={500} className="input" />
@@ -229,9 +231,9 @@ export function JoinForm() {
             <Link href="/privacy" target="_blank" className="underline">
               Privacy Policy
             </Link>
-            . I understand the site is only a place to connect and is not part of any sale or rental. I agree that the
-            site admin may look at my photo to confirm my connection. It is private, only the admin can see it, and it
-            is deleted as soon as my request is reviewed.
+            . I understand the site is only a place to connect and is not part of any sale or rental.
+            {JOIN_REQUIRES_PROOF &&
+              " I agree that the site admin may look at my photo to confirm my connection. It is private, only the admin can see it, and it is deleted as soon as my request is reviewed."}
           </span>
         </label>
         {fe.consent && (

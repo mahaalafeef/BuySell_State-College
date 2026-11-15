@@ -107,7 +107,7 @@ export default async function JoinInbox({ searchParams }: { searchParams: Promis
                   />
                 </details>
               ) : (
-                <p className="mt-3 text-sm text-muted">Proof photo deleted after review.</p>
+                tab !== "PENDING" && <p className="mt-3 text-sm text-muted">No proof photo on file.</p>
               )}
 
               <div className="mt-3 flex flex-wrap items-center gap-2">

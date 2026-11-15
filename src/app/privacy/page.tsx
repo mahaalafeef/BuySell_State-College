@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { LegalPage, type LegalSection } from "@/components/LegalPage";
 import { CONTACT_EMAIL, SITE_NAME } from "@/lib/config";
+import { JOIN_REQUIRES_PROOF } from "@/lib/join";
 
 export const metadata: Metadata = { title: "Privacy Policy" };
 
@@ -18,7 +19,7 @@ const sections: LegalSection[] = [
   {
     title: "Information we collect",
     bullets: [
-      "Request to join: your name, WhatsApp number or username, how you are connected (for example, student or resident), an optional note, and a photo of your proof of connection.",
+      "Request to join: your name, WhatsApp number or username, how you are connected (for example, student or resident), an optional note" + (JOIN_REQUIRES_PROOF ? ", and a photo of your proof of connection." : "."),
       "Member account: a password (stored only as a one-way scrambled hash, never in readable form) and a personal sign-in link.",
       "Listings: the title, description, price, category, condition, location or neighborhood, photos, the contact details you choose to show, an optional WhatsApp number or username, and a private phone number and passcode used only to prove the listing is yours (the passcode is stored only as a hash, and the phone number as its last 10 digits).",
       "Messages to us: your name, how to reach you, and your message, plus the recent chat conversation if you use \"Talk to a person\".",
@@ -44,7 +45,7 @@ const sections: LegalSection[] = [
     bullets: [
       "Anyone (even without an account) may be able to see a listing's title, description, price, category, condition, location or neighborhood, and photos. Do not put your home address, phone number, or other private details in these fields or in your photos.",
       "Only approved members and the admin can see the contact details a seller chose to show, including the WhatsApp button.",
-      "Only the admin can see your join request, including your name, WhatsApp number, and proof photo.",
+      "Only the admin can see your join request, including your name and WhatsApp number" + (JOIN_REQUIRES_PROOF ? ", and proof photo." : "."),
       "Listing photos are stored with a public web address. Anyone who has the exact link to a photo can open it, even if they are not a member.",
       "Your private phone number and passcode are never shown to other users.",
     ],
@@ -52,12 +53,16 @@ const sections: LegalSection[] = [
       "Once you give your contact details to another member, or message someone on WhatsApp, we cannot control what that person does with them. Members agree not to misuse or share other members' information, but we cannot guarantee they will follow that rule.",
     ],
   },
-  {
-    title: "Your proof photo",
-    paragraphs: [
-      "The photo you send with a join request is used only so the admin can confirm your connection. It is visible only to the admin and is deleted from our database as soon as your request is approved or rejected. Please cover anything that is not needed, such as ID numbers, birth date, and account numbers.",
-    ],
-  },
+  ...(JOIN_REQUIRES_PROOF
+    ? [
+      {
+        title: "Your proof photo",
+        paragraphs: [
+          "The photo you send with a join request is used only so the admin can confirm your connection. It is visible only to the admin and is deleted from our database as soon as your request is approved or rejected. Please cover anything that is not needed, such as ID numbers, birth date, and account numbers.",
+        ],
+      },
+      ]
+    : []),
   {
     title: "Services that help us run the Site",
     paragraphs: ["We share information with service providers only as needed to run the Site. These may include:"],
@@ -87,7 +92,7 @@ const sections: LegalSection[] = [
   {
     title: "How long we keep information",
     bullets: [
-      "Proof photos: deleted when your request is decided.",
+      ...(JOIN_REQUIRES_PROOF ? ["Proof photos: deleted when your request is decided."] : []),
       "Join request and member records: kept while you are a member and for a reasonable time afterward, then deleted on request or when no longer needed.",
       "Listings: kept until you or we delete them.",
       "Messages to us: kept as long as needed to help you and then deleted.",

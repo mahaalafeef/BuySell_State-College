@@ -8,3 +8,6 @@ export const JOIN_ROLES = [
 ] as const;
 
 export const MAX_PROOF_BYTES = 1_500_000;
+
+// Set to true to ask applicants for a proof photo again (the photo code is kept, just switched off).
+export const JOIN_REQUIRES_PROOF = false;

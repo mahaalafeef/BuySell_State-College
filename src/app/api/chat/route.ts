@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { buildSystemPrompt } from "@/lib/chatPrompt";
 import { SITE_NAME } from "@/lib/config";
+import { answerFromFaq, NOT_SURE } from "@/lib/faq";
 import { checkLimit, ipHash, recordEvent } from "@/lib/ratelimit";
 import { getAutoApprove } from "@/lib/settings";
 
@@ -25,9 +26,6 @@ function clean(input: unknown): Msg[] | null {
 }
 
 export async function POST(request: Request) {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return NextResponse.json({ error: "unavailable" }, { status: 503 });
-
   // Only accept requests from this site's own pages
   const origin = request.headers.get("origin");
   if (origin && new URL(origin).host !== request.headers.get("host")) {
@@ -53,6 +51,14 @@ export async function POST(request: Request) {
   }
   await recordEvent("chat", hash);
 
+  const autoApprove = await getAutoApprove();
+  const faqReply = () =>
+    answerFromFaq(messages[messages.length - 1].content, { autoApprove }) ?? NOT_SURE;
+
+  // Free mode: no AI key, so answer from the built-in list in src/lib/faq.ts
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) return NextResponse.json({ reply: faqReply() });
+
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -64,7 +70,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 400,
-        system: buildSystemPrompt({ siteName: SITE_NAME, autoApprove: await getAutoApprove() }),
+        system: buildSystemPrompt({ siteName: SITE_NAME, autoApprove }),
         messages,
       }),
       signal: AbortSignal.timeout(25_000),
@@ -72,7 +78,7 @@ export async function POST(request: Request) {
 
     if (!res.ok) {
       console.error("Chat API error:", res.status, await res.text());
-      return NextResponse.json({ error: "The assistant couldn't answer just now." }, { status: 502 });
+      return NextResponse.json({ reply: faqReply() });
     }
 
     const data = (await res.json()) as { content?: { type: string; text?: string }[] };
@@ -87,6 +93,6 @@ export async function POST(request: Request) {
     });
   } catch (err) {
     console.error("Chat error:", err);
-    return NextResponse.json({ error: "The assistant couldn't answer just now." }, { status: 502 });
+    return NextResponse.json({ reply: faqReply() });
   }
 }

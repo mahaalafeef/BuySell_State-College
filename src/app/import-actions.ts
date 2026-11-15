@@ -13,21 +13,12 @@ import {
 import { db } from "@/lib/db";
 import { hashPasscode, normalizePhone } from "@/lib/security";
 import { isAdmin } from "@/lib/session";
+import { ruleParse, type Draft } from "@/lib/ruleParse";
 import { editSchema, toCents } from "@/lib/validation";
 import { normalizeWhatsapp } from "@/lib/whatsapp";
 
-export type Draft = {
-  title: string;
-  description: string;
-  price: string;
-  category: string;
-  condition: string;
-  location: string;
-  contact: string;
-  whatsapp: string;
-  phone: string;
-};
-export type ParseResult = { draft?: Draft; error?: string };
+export type { Draft } from "@/lib/ruleParse";
+export type ParseResult = { draft?: Draft; error?: string; note?: string };
 export type ImportState =
   | { ok?: boolean; id?: string; error?: string; fieldErrors?: Record<string, string[] | undefined> }
   | undefined;
@@ -60,11 +51,13 @@ function str(v: unknown) {
 export async function parsePost(text: string): Promise<ParseResult> {
   if (!(await isAdmin())) redirect("/admin/login");
 
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return { error: "ANTHROPIC_API_KEY isn't set in Vercel yet." };
-
   const post = text.trim().slice(0, 4000);
   if (post.length < 10) return { error: "Paste the full post first." };
+
+  // Free mode: no AI key, so read the post with simple rules instead
+  const key = process.env.ANTHROPIC_API_KEY;
+  const FREE_NOTE = "Filled in automatically with simple rules (no AI), so please check every field.";
+  if (!key) return { draft: ruleParse(post), note: FREE_NOTE };
 
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -80,14 +73,14 @@ export async function parsePost(text: string): Promise<ParseResult> {
     });
     if (!res.ok) {
       console.error("Import parse error:", res.status, await res.text());
-      return { error: "Couldn't read that post. Try again in a moment." };
+      return { draft: ruleParse(post), note: FREE_NOTE };
     }
 
     const data = (await res.json()) as { content?: { type: string; text?: string }[] };
     const out = (data.content ?? []).filter((b) => b.type === "text").map((b) => b.text ?? "").join("");
     const start = out.indexOf("{");
     const end = out.lastIndexOf("}");
-    if (start < 0 || end < start) return { error: "Couldn't read that post. You can fill the form in by hand." };
+    if (start < 0 || end < start) return { draft: ruleParse(post), note: FREE_NOTE };
     const j = JSON.parse(out.slice(start, end + 1)) as Record<string, unknown>;
 
     const category = (CATEGORIES as readonly string[]).includes(str(j.category)) ? str(j.category) : "";
@@ -114,7 +107,7 @@ export async function parsePost(text: string): Promise<ParseResult> {
     };
   } catch (err) {
     console.error("Import parse failed:", err);
-    return { error: "Couldn't read that post. You can fill the form in by hand." };
+    return { draft: ruleParse(post), note: FREE_NOTE };
   }
 }
 

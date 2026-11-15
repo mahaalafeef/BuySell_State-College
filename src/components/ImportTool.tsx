@@ -13,6 +13,7 @@ export function ImportTool() {
   const [round, setRound] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
+  const [note, setNote] = useState<string>();
 
   async function read() {
     setBusy(true);
@@ -23,6 +24,7 @@ export function ImportTool() {
       setError(res.error ?? "Couldn't read that post.");
       return;
     }
+    setNote(res.note);
     setDraft(res.draft);
     setRound((r) => r + 1);
   }
@@ -58,6 +60,7 @@ export function ImportTool() {
         </button>
       </section>
 
+      {draft && note && <p className="rounded-md bg-amber-100 p-3 text-sm text-amber-900">{note}</p>}
       {draft && <DraftForm key={round} draft={draft} onDone={reset} />}
     </div>
   );

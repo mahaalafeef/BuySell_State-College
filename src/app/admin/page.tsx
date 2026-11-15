@@ -46,6 +46,9 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold">Admin</h1>
         <div className="flex gap-2">
+          <Link href="/admin/import" className="btn-ghost">
+            Import from WhatsApp
+          </Link>
           <Link href="/admin/support" className="btn-ghost">
             Customer messages{openSupport > 0 ? ` (${openSupport} new)` : ""}
           </Link>

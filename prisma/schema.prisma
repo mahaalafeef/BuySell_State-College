@@ -68,3 +68,20 @@ model ChatEvent {
   @@index([kind, ipHash, createdAt])
   @@index([createdAt])
 }
+
+// Requests to join the community WhatsApp group. The proof photo is private and deleted after review.
+model JoinRequest {
+  id          String    @id @default(cuid())
+  name        String
+  whatsapp    String // digits with country code, or a WhatsApp username
+  role        String // how they are connected (student, resident, ...)
+  note        String?
+  proof       Bytes? // photo of their proof; set to null once the request is decided
+  hasProof    Boolean   @default(false)
+  status      String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  decidedNote String?
+  createdAt   DateTime  @default(now())
+  decidedAt   DateTime?
+
+  @@index([status, createdAt])
+}

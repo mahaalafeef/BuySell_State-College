@@ -9,6 +9,11 @@ export const NOT_SURE =
 
 const FAQS: Faq[] = [
   {
+    keywords: ["join", "whatsapp group", "invite", "member", "membership", "join the group"],
+    answer: () =>
+      "To join our WhatsApp group, open the Join page (add /join to the end of this site's address). Send a request with your WhatsApp number and a photo showing your Penn State connection or State College residency. We review each one and message you on WhatsApp with the invite.",
+  },
+  {
     keywords: ["post", "sell", "list my", "list an", "list a", "create a listing", "add a listing", "new listing", "put up", "how do i list"],
     answer: () =>
       "To post, tap \"Post a listing\" at the top, choose an item or housing, fill in the details, add photos if you like, and pick a passcode. Your phone number stays private. It is only used to edit your listing later.",

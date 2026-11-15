@@ -33,11 +33,12 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const { status } = await searchParams;
   const tab: Tab = (TABS as readonly string[]).includes(status ?? "") ? (status as Tab) : "PENDING";
 
-  const [auto, listings, counts, openSupport] = await Promise.all([
+  const [auto, listings, counts, openSupport, pendingJoins] = await Promise.all([
     getAutoApprove(),
     db.listing.findMany({ where: { status: tab }, orderBy: { createdAt: "desc" }, take: 100 }),
     db.listing.groupBy({ by: ["status"], _count: { _all: true } }),
     db.supportRequest.count({ where: { status: "OPEN" } }),
+    db.joinRequest.count({ where: { status: "PENDING" } }),
   ]);
   const countOf = (s: Tab) => counts.find((c) => c.status === s)?._count._all ?? 0;
 
@@ -46,6 +47,9 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold">Admin</h1>
         <div className="flex gap-2">
+          <Link href="/admin/join" className="btn-ghost">
+            Join requests{pendingJoins > 0 ? ` (${pendingJoins} new)` : ""}
+          </Link>
           <Link href="/admin/import" className="btn-ghost">
             Import from WhatsApp
           </Link>

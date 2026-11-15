@@ -59,3 +59,11 @@ export async function notifyAdminSupport(msg: { name: string; contact: string; m
     <p><a href="${siteUrl()}/admin/support">Open customer messages</a></p>`;
   await sendToAdmin(`Customer service message from ${msg.name}`, html);
 }
+
+export async function notifyAdminJoin(req: { name: string; role: string }) {
+  const html = `
+    <h2>New request to join the group</h2>
+    <p><strong>${esc(req.name)}</strong> says they are: ${esc(req.role)}</p>
+    <p><a href="${siteUrl()}/admin/join">Review it in the admin page</a></p>`;
+  await sendToAdmin(`Join request from ${req.name}`, html);
+}

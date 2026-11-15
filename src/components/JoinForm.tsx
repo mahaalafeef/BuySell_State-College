@@ -221,8 +221,17 @@ export function JoinForm() {
         <label className="flex items-start gap-3">
           <input type="checkbox" name="consent" className="mt-1 h-5 w-5 shrink-0" />
           <span>
-            I agree that the site admin may look at my photo to confirm my connection. It is private, only the admin
-            can see it, and it is deleted as soon as my request is reviewed.
+            I am 18 or older and I agree to the{" "}
+            <Link href="/terms" target="_blank" className="underline">
+              Terms of Use
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" target="_blank" className="underline">
+              Privacy Policy
+            </Link>
+            . I understand the site is only a place to connect and is not part of any sale or rental. I agree that the
+            site admin may look at my photo to confirm my connection. It is private, only the admin can see it, and it
+            is deleted as soon as my request is reviewed.
           </span>
         </label>
         {fe.consent && (

@@ -81,6 +81,14 @@ export default async function ListingPage({ params }: Params) {
                   Message on WhatsApp
                 </a>
               )}
+              <p className="mt-3 text-xs text-muted">
+                This site only connects people and is not part of any sale or rental. Meet in a public place, inspect
+                before you pay, and beware of scams. See the{" "}
+                <Link href="/terms" className="underline">
+                  Terms of Use
+                </Link>
+                .
+              </p>
             </div>
           ) : (
             <div className="rounded-lg border border-line bg-white p-4">

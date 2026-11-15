@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import type { FormState } from "@/app/actions";
 import { CONDITIONS, HOUSING_CATEGORIES, RENTAL_CONDITION, SALE_CATEGORIES } from "@/lib/config";
@@ -210,6 +211,31 @@ export function ListingForm({ mode, action, initial = {}, initialImages = [], ki
           <input name="website" tabIndex={-1} autoComplete="off" />
         </label>
       </div>
+
+      {mode === "create" && (
+        <div>
+          <label className="flex items-start gap-3">
+            <input type="checkbox" name="terms" required className="mt-1 h-5 w-5 shrink-0" />
+            <span>
+              I agree to the{" "}
+              <Link href="/terms" target="_blank" className="underline">
+                Terms of Use
+              </Link>{" "}
+              and{" "}
+              <Link href="/privacy" target="_blank" className="underline">
+                Privacy Policy
+              </Link>
+              . I confirm I am allowed to sell or rent this, the details are accurate, and any deal is between me and the
+              other person, not this site.
+            </span>
+          </label>
+          {err("terms") && (
+            <p role="alert" className="mt-1 text-sm text-danger">
+              {err("terms")}
+            </p>
+          )}
+        </div>
+      )}
 
       <SubmitButton disabled={uploading} pendingText={mode === "create" ? "Posting…" : "Saving…"}>
         {mode === "create" ? "Post listing" : "Save changes"}

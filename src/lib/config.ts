@@ -55,3 +55,7 @@ export function formatListingPrice(cents: number, category: string) {
   const base = formatPrice(cents);
   return (HOUSING_CATEGORIES as readonly string[]).includes(category) ? `${base}/month` : base;
 }
+
+// Legal pages (/terms and /privacy). Set NEXT_PUBLIC_CONTACT_EMAIL in your environment to show an email address.
+export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "";
+export const LEGAL_UPDATED = "November 15, 2026";

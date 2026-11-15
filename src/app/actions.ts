@@ -70,6 +70,9 @@ export async function createListing(_prev: FormState, fd: FormData): Promise<For
   if (String(fd.get("website") ?? "") !== "") redirect("/");
 
   const values = formValues(fd);
+  if (fd.get("terms") !== "on") {
+    return { fieldErrors: { terms: ["Please agree to the Terms of Use and Privacy Policy to post."] }, values };
+  }
   const parsed = createSchema.safeParse(rawForm(fd));
   if (!parsed.success) return { fieldErrors: parsed.error.flatten().fieldErrors, values };
 

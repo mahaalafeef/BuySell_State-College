@@ -59,3 +59,32 @@ export function formatListingPrice(cents: number, category: string) {
 // Legal pages (/terms and /privacy). Set NEXT_PUBLIC_CONTACT_EMAIL in your environment to show an email address.
 export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "";
 export const LEGAL_UPDATED = "November 15, 2026";
+
+// Public post numbers, like BSC-0042. Each listing gets its own, and it never repeats.
+export const LISTING_ID_PREFIX = "BSC";
+export const SITE_TIMEZONE = "America/New_York"; // State College, so dates match what members see locally
+
+export function formatListingId(n: number) {
+  return `${LISTING_ID_PREFIX}-${String(n).padStart(4, "0")}`;
+}
+
+/**
+ * Reads a post number typed by a person: "BSC-0042", "bsc 42", "#42", or (unless requirePrefix) just "42".
+ * Returns null if the text isn't a post number.
+ */
+export function parseListingId(input: string, opts: { requirePrefix?: boolean } = {}): number | null {
+  const prefix = `(?:#|${LISTING_ID_PREFIX}[\\s-]*)`;
+  const re = new RegExp(`^${opts.requirePrefix ? prefix : `${prefix}?`}(\\d{1,9})$`, "i");
+  const m = input.trim().match(re);
+  const n = m ? Number(m[1]) : NaN;
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
+
+/** "Nov 15, 2026" or, with withTime, "Nov 15, 2026, 3:42 PM" (State College time). */
+export function formatPosted(date: Date, withTime = false) {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: SITE_TIMEZONE,
+    dateStyle: "medium",
+    ...(withTime ? { timeStyle: "short" as const } : {}),
+  }).format(date);
+}

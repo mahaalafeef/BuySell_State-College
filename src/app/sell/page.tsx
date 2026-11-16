@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { createListing } from "@/app/actions";
 import { ListingForm } from "@/components/ListingForm";
+import { hasMemberAccess } from "@/lib/memberAccess";
 
 export const metadata: Metadata = { title: "Post a listing" };
 
 export default async function SellPage({ searchParams }: { searchParams: Promise<{ type?: string }> }) {
+  // Only approved members (checked live) can post
+  if (!(await hasMemberAccess())) redirect("/members");
+
   const { type } = await searchParams;
 
   if (type !== "item" && type !== "housing") {

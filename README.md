@@ -70,3 +70,12 @@ Seller contact details (the contact text and the WhatsApp button/redirect) are s
 - `src/middleware.ts` blocks the whole site for anyone without a valid member sign-in cookie.
 - `src/lib/memberAccess.ts` (`hasMemberAccess`) is the real check. It looks up the member in the database on every request, so removing someone in `/admin/join` cuts off contact details immediately, even though their cookie is valid for up to 90 days.
 - It is used in `src/app/listings/[id]/page.tsx` and `src/app/contact/[id]/route.ts`. Use it for any new place that shows contact details.
+
+## Screenshot to listing (admin only)
+
+`/admin/import` can start from a screenshot of a post. It is free and needs no API key or extra npm package.
+
+- The text is read in the admin's own browser with Tesseract.js (open source), loaded from a pinned version on the jsDelivr CDN the first time it is used (`src/lib/ocr.ts`). `src/lib/ocrClean.ts` removes phone status bars and chat buttons.
+- The product photo is found with a small image check (`src/lib/photoCrop.ts`) and cropped in the browser. The admin can adjust the crop with sliders before it is saved.
+- The text then goes through the same admin-only `parsePost` and `createImportedListing` actions as pasted posts. Screenshot drafts default to the review list (Pending) instead of publishing straight away.
+- Posting by regular users is unchanged: only approved members can post (checked live), and the admin approval mode still applies.

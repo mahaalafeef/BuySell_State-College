@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PhotoGallery } from "@/components/PhotoGallery";
 import { StatusBadge } from "@/components/StatusBadge";
-import { formatListingPrice } from "@/lib/config";
+import { formatListingId, formatListingPrice, formatPosted } from "@/lib/config";
 import { db } from "@/lib/db";
 import { hasMemberAccess } from "@/lib/memberAccess";
 import { canManage, isAdmin } from "@/lib/session";
@@ -60,8 +60,14 @@ export default async function ListingPage({ params }: Params) {
           <dd className="col-span-2">{listing.condition}</dd>
           <dt className="text-muted">Location</dt>
           <dd className="col-span-2">{listing.location}</dd>
+          <dt className="text-muted">Post ID</dt>
+          <dd className="col-span-2 font-mono">{formatListingId(listing.listingNumber)}</dd>
           <dt className="text-muted">Posted</dt>
-          <dd className="col-span-2">{listing.createdAt.toLocaleDateString("en-US", { dateStyle: "medium" })}</dd>
+          <dd className="col-span-2">{formatPosted(listing.createdAt, true)}</dd>
+          <dt className="text-muted">Status</dt>
+          <dd className="col-span-2">
+            <StatusBadge status={listing.status} />
+          </dd>
         </dl>
 
         <p className="max-w-prose whitespace-pre-wrap">{listing.description}</p>

@@ -16,6 +16,7 @@ enum ListingStatus {
 
 model Listing {
   id              String        @id @default(cuid())
+  listingNumber   Int           @default(autoincrement()) // public post number (shown as BSC-0001), never repeats
   title           String
   description     String
   priceCents      Int
@@ -37,6 +38,7 @@ model Listing {
 
   @@index([status, createdAt])
   @@index([phone])
+  @@index([listingNumber])
 }
 
 // Simple key/value store for site settings (e.g. autoApprove)

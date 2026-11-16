@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { deleteMyListing, setSold, updateListing } from "@/app/actions";
 import { ListingForm } from "@/components/ListingForm";
 import { StatusBadge } from "@/components/StatusBadge";
+import { formatListingId, formatPosted } from "@/lib/config";
 import { db } from "@/lib/db";
 import { canManage } from "@/lib/session";
 
@@ -45,6 +46,9 @@ export default async function EditListing({
         <h1 className="text-3xl font-bold">Edit listing</h1>
         <StatusBadge status={listing.status} />
       </div>
+      <p className="-mt-3 text-sm text-muted">
+        {formatListingId(listing.listingNumber)} · Posted {formatPosted(listing.createdAt, true)}
+      </p>
 
       {saved && (
         <p role="status" className="rounded-md bg-ok/10 p-3 text-ok">

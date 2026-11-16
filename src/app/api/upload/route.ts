@@ -1,10 +1,14 @@
 import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
+import { hasMemberAccess } from "@/lib/memberAccess";
 
 const MAX_BYTES = 4 * 1024 * 1024; // Vercel allows request bodies up to 4.5 MB
 const TYPES: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 
 export async function POST(request: Request) {
+  // Only approved members can upload photos
+  if (!(await hasMemberAccess())) return NextResponse.json({ error: "Members only." }, { status: 401 });
+
   // Vercel connects Blob stores with built-in sign-in (BLOB_STORE_ID) by default.
   // BLOB_READ_WRITE_TOKEN also works if you chose to add it.
   if (!process.env.BLOB_STORE_ID && !process.env.BLOB_READ_WRITE_TOKEN) {

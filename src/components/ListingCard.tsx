@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { FramedImage } from "./FramedImage";
-import { formatListingPrice, HOUSING_CATEGORIES } from "@/lib/config";
+import { formatListingId, formatListingPrice, formatPosted, HOUSING_CATEGORIES } from "@/lib/config";
 
 type Props = {
   id: string;
+  listingNumber: number;
+  createdAt: Date;
   title: string;
   priceCents: number;
   category: string;
@@ -12,7 +14,7 @@ type Props = {
   imageUrl: string | null;
 };
 
-export function ListingCard({ id, title, priceCents, category, location, condition, imageUrl }: Props) {
+export function ListingCard({ id, listingNumber, createdAt, title, priceCents, category, location, condition, imageUrl }: Props) {
   const rental = (HOUSING_CATEGORIES as readonly string[]).includes(category);
   return (
     <Link
@@ -35,6 +37,9 @@ export function ListingCard({ id, title, priceCents, category, location, conditi
           <span className="truncate">{location}</span>
           <span className="shrink-0 rounded-full bg-paper px-2 py-0.5">{rental ? category : condition}</span>
         </div>
+        <p className="mt-2 text-xs text-muted">
+          {formatListingId(listingNumber)} · Posted {formatPosted(createdAt)}
+        </p>
       </div>
     </Link>
   );

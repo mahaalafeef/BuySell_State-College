@@ -16,11 +16,11 @@ export function AccessForm({ defaultId = "" }: { defaultId?: string }) {
       )}
       <div>
         <label htmlFor="id" className="mb-1 block font-semibold">
-          Listing ID
+          Post number or listing ID
         </label>
         <input id="id" name="id" defaultValue={state?.values?.id ?? defaultId} className="input" />
         <p className="mt-1 text-sm text-muted">
-          Find it in the link you got after posting. Leave it blank to see every listing tied to your phone number.
+          Your post number looks like BSC-0042 and is shown after you post. Leave it blank to see every listing tied to your phone number.
         </p>
       </div>
       <div>

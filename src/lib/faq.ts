@@ -16,12 +16,12 @@ const FAQS: Faq[] = [
   {
     keywords: ["post", "sell", "list my", "list an", "list a", "create a listing", "add a listing", "new listing", "put up", "how do i list"],
     answer: () =>
-      "To post, tap \"Post a listing\" at the top, choose an item or housing, fill in the details, add photos if you like, and pick a passcode. Your phone number stays private. It is only used to edit your listing later.",
+      "Only approved members can post. To post, tap \"Post a listing\" at the top, choose an item or housing, fill in the details, add photos if you like, and pick a passcode. Your phone number stays private. It is only used to edit your listing later.",
   },
   {
     keywords: ["edit", "change my", "modify", "update my", "delete", "remove my", "mark as sold", "sold", "relist", "my listing"],
     answer: () =>
-      "Go to \"My listings\" and enter the listing ID you were given after posting, plus your passcode OR the phone number you listed with. You can also enter just your phone number to see all your listings. Once you're in, you can edit, mark as sold, relist, or delete.",
+      "Go to \"My listings\" and enter the post number you were given after posting (like BSC-0042), plus your passcode OR the phone number you listed with. You can also enter just your phone number to see all your listings. Once you're in, you can edit, mark as sold, relist, or delete.",
   },
   {
     keywords: ["forgot", "lost", "passcode", "password", "listing id", "can't edit", "cant edit", "locked", "locked out"],

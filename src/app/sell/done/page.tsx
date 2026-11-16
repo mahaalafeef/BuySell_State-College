@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/StatusBadge";
+import { formatListingId, formatPosted } from "@/lib/config";
 import { db } from "@/lib/db";
 import { canManage } from "@/lib/session";
 
@@ -24,10 +25,11 @@ export default async function Done({ searchParams }: { searchParams: Promise<{ i
       </p>
 
       <div className="rounded-lg border border-line bg-white p-4">
-        <p className="font-semibold">Save your listing ID</p>
-        <p className="mt-1 break-all rounded bg-paper p-2 font-mono text-sm">{listing.id}</p>
+        <p className="font-semibold">Your post number</p>
+        <p className="mt-1 rounded bg-paper p-2 font-mono text-lg">{formatListingId(listing.listingNumber)}</p>
+        <p className="mt-1 text-sm text-muted">Posted {formatPosted(listing.createdAt, true)}</p>
         <p className="mt-2 text-sm text-muted">
-          To edit later, go to My listings and enter this ID with your passcode or phone number.
+          Save this number. To edit later, go to My listings and enter it with your passcode or phone number.
         </p>
       </div>
 

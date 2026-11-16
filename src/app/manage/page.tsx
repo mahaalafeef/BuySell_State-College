@@ -3,7 +3,7 @@ import Link from "next/link";
 import { signOut } from "@/app/actions";
 import { AccessForm } from "@/components/AccessForm";
 import { StatusBadge } from "@/components/StatusBadge";
-import { formatPrice } from "@/lib/config";
+import { formatListingId, formatPosted, formatPrice } from "@/lib/config";
 import { db } from "@/lib/db";
 import { getUserSession } from "@/lib/session";
 
@@ -42,6 +42,9 @@ export default async function ManagePage({ searchParams }: { searchParams: Promi
               <div className="min-w-0">
                 <p className="truncate font-semibold">{l.title}</p>
                 <p className="text-sm text-muted">{formatPrice(l.priceCents)}</p>
+                <p className="text-xs text-muted">
+                  {formatListingId(l.listingNumber)} · Posted {formatPosted(l.createdAt)}
+                </p>
               </div>
               <StatusBadge status={l.status} />
             </Link>

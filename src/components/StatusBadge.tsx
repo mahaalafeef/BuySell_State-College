@@ -6,8 +6,8 @@ const styles: Record<string, string> = {
 };
 
 const labels: Record<string, string> = {
-  PENDING: "Waiting for approval",
-  APPROVED: "Live",
+  PENDING: "Pending",
+  APPROVED: "Available",
   REJECTED: "Not approved",
   SOLD: "Sold",
 };

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ListingCard } from "@/components/ListingCard";
 import { PageHero } from "@/components/PageHero";
-import { CATEGORIES, HERO_SUBTITLE, HERO_TITLE, SALE_CATEGORIES } from "@/lib/config";
+import { CATEGORIES, HERO_SUBTITLE, HERO_TITLE, parseListingId, SALE_CATEGORIES } from "@/lib/config";
 import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +15,8 @@ export default async function Home({
   const term = q?.trim() || undefined;
   const activeCategory = category && (CATEGORIES as readonly string[]).includes(category) ? category : undefined;
 
+  const idNumber = term ? parseListingId(term, { requirePrefix: true }) : null; // e.g. "BSC-0042" or "#42"
+
   const listings = await db.listing.findMany({
     where: {
       status: "APPROVED",
@@ -24,6 +26,7 @@ export default async function Home({
             OR: [
               { title: { contains: term, mode: "insensitive" as const } },
               { description: { contains: term, mode: "insensitive" as const } },
+              ...(idNumber ? [{ listingNumber: idNumber }] : []),
             ],
           }
         : {}),

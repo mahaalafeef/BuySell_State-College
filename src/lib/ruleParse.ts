@@ -36,13 +36,16 @@ export function ruleParse(text: string): Draft {
   const body = lines.join("\n");
 
   // Title: the first sentence of the post, kept short
-  const first = (lines[0] ?? "").replace(/[*_~]/g, "").trim();
+  // Skip lines that are only a price or a symbol, so the title is a line with real words
+  const first = (lines.find((l) => /[A-Za-z]{3,}/.test(l)) ?? lines[0] ?? "").replace(/[*_~]/g, "").trim();
   let title = (first.split(/(?<=[.!?])\s|\s[-–—]\s/)[0] || first).trim();
   if (title.length < 3) title = body.replace(/\s+/g, " ").slice(0, 60);
   if (title.length > 70) title = title.slice(0, 70).replace(/\s+\S*$/, "");
 
   const priceMatch =
-    body.match(/\$\s?(\d[\d,]*(?:\.\d{1,2})?)/) || body.match(/(\d[\d,]*(?:\.\d{1,2})?)\s?(?:usd|dollars)\b/i);
+    body.match(/\$\s?(\d[\d,]*(?:\.\d{1,2})?)/) ||
+    body.match(/(\d[\d,]*(?:\.\d{1,2})?)\s?(?:usd|dollars)\b/i) ||
+    body.match(/\bprice\s*[:\-]?\s*\$?\s?(\d[\d,]*(?:\.\d{1,2})?)/i);
   const price = priceMatch ? priceMatch[1].replace(/,/g, "") : "";
 
   const phoneMatch = body.match(/(\+?\d[\d\s().-]{8,16}\d)/);

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ListingCard } from "@/components/ListingCard";
 import { PageHero } from "@/components/PageHero";
-import { HOUSING_CATEGORIES } from "@/lib/config";
+import { HOUSING_CATEGORIES, parseListingId } from "@/lib/config";
 import { db } from "@/lib/db";
 
 export const metadata: Metadata = { title: "Housing and subleases" };
@@ -17,6 +17,8 @@ export default async function HousingPage({
   const term = q?.trim() || undefined;
   const active = category && (HOUSING_CATEGORIES as readonly string[]).includes(category) ? category : undefined;
 
+  const idNumber = term ? parseListingId(term, { requirePrefix: true }) : null; // e.g. "BSC-0042" or "#42"
+
   const listings = await db.listing.findMany({
     where: {
       status: "APPROVED",
@@ -27,6 +29,7 @@ export default async function HousingPage({
               { title: { contains: term, mode: "insensitive" as const } },
               { description: { contains: term, mode: "insensitive" as const } },
               { location: { contains: term, mode: "insensitive" as const } },
+              ...(idNumber ? [{ listingNumber: idNumber }] : []),
             ],
           }
         : {}),

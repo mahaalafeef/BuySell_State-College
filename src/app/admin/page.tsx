@@ -10,7 +10,7 @@ import {
   setApprovalMode,
 } from "@/app/actions";
 import { StatusBadge } from "@/components/StatusBadge";
-import { formatPrice } from "@/lib/config";
+import { formatListingId, formatPosted, formatPrice } from "@/lib/config";
 import { db } from "@/lib/db";
 import { isAdmin } from "@/lib/session";
 import { getAutoApprove } from "@/lib/settings";
@@ -51,7 +51,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
             Join requests{pendingJoins > 0 ? ` (${pendingJoins} new)` : ""}
           </Link>
           <Link href="/admin/import" className="btn-ghost">
-            Import from WhatsApp
+            Import a post
           </Link>
           <Link href="/admin/support" className="btn-ghost">
             Customer messages{openSupport > 0 ? ` (${openSupport} new)` : ""}
@@ -113,6 +113,9 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
                   </Link>
                   <p className="text-sm text-muted">
                     {formatPrice(l.priceCents)}, {l.category}, {l.location}
+                  </p>
+                  <p className="text-xs text-muted">
+                    {formatListingId(l.listingNumber)} · Posted {formatPosted(l.createdAt, true)}
                   </p>
                 </div>
                 <StatusBadge status={l.status} />

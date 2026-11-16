@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { notifyAdminPending } from "@/lib/email";
 import { normalizeWhatsapp } from "@/lib/whatsapp";
-import { LOCK_MINUTES, MAX_FAILED_ATTEMPTS } from "@/lib/config";
+import { LOCK_MINUTES, MAX_FAILED_ATTEMPTS, parseListingId } from "@/lib/config";
+import { hasMemberAccess } from "@/lib/memberAccess";
 import { db } from "@/lib/db";
 import { hashPasscode, normalizePhone, safeEqual, verifyPasscode } from "@/lib/security";
 import {
@@ -69,6 +70,9 @@ export async function createListing(_prev: FormState, fd: FormData): Promise<For
   // Honeypot: real people never fill this hidden field
   if (String(fd.get("website") ?? "") !== "") redirect("/");
 
+  // Only approved members (checked live) can post
+  if (!(await hasMemberAccess())) redirect("/members");
+
   const values = formValues(fd);
   if (fd.get("terms") !== "on") {
     return { fieldErrors: { terms: ["Please agree to the Terms of Use and Privacy Policy to post."] }, values };
@@ -105,9 +109,17 @@ export async function createListing(_prev: FormState, fd: FormData): Promise<For
 }
 
 export async function verifyAccess(_prev: FormState, fd: FormData): Promise<FormState> {
-  const id = String(fd.get("id") ?? "").trim();
+  const rawId = String(fd.get("id") ?? "").trim();
   const credential = String(fd.get("credential") ?? "").trim();
-  const values = { id };
+  const values = { id: rawId };
+
+  // People can type the post number (BSC-0042 or 42) or the long listing ID
+  let id = rawId;
+  const postNumber = parseListingId(rawId);
+  if (postNumber !== null) {
+    const found = await db.listing.findFirst({ where: { listingNumber: postNumber }, select: { id: true } });
+    id = found?.id ?? "no-such-listing";
+  }
   const generic = "That didn't match. Check the listing ID and try again.";
 
   if (!credential) return { error: "Enter your passcode or phone number.", values };

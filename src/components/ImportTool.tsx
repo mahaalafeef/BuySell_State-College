@@ -5,10 +5,25 @@ import { useActionState, useState } from "react";
 import { createImportedListing, parsePost, type Draft } from "@/app/import-actions";
 import { CATEGORIES, CONDITIONS, RENTAL_CONDITION } from "@/lib/config";
 import { PhotoUploader } from "./PhotoUploader";
+import { ScreenshotReader } from "./ScreenshotReader";
 import { SubmitButton } from "./SubmitButton";
+
+/** Saves a cropped photo with the same upload route the photo button uses (admins are allowed). */
+async function uploadPhoto(blob: Blob): Promise<string> {
+  const body = new FormData();
+  body.append("file", new File([blob], "photo.jpg", { type: "image/jpeg" }));
+  const res = await fetch("/api/upload", { method: "POST", body });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.url) throw new Error(data.error || "upload failed");
+  return data.url as string;
+}
 
 export function ImportTool() {
   const [text, setText] = useState("");
+  const [fromScreenshot, setFromScreenshot] = useState(false);
+  const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [shotKey, setShotKey] = useState(0);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [round, setRound] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -19,18 +34,33 @@ export function ImportTool() {
     setBusy(true);
     setError(undefined);
     const res = await parsePost(text);
-    setBusy(false);
     if (!res.draft) {
+      setBusy(false);
       setError(res.error ?? "Couldn't read that post.");
       return;
     }
-    setNote(res.note);
+    let urls: string[] = [];
+    let photoNote: string | undefined;
+    if (photoBlob) {
+      try {
+        urls = [await uploadPhoto(photoBlob)];
+      } catch (err) {
+        photoNote = `The cropped photo couldn't be saved (${err instanceof Error ? err.message : "upload failed"}). Add it with the photo button below.`;
+      }
+    }
+    setBusy(false);
+    setNote([res.note, photoNote].filter(Boolean).join(" ") || undefined);
+    setPhotos(urls);
     setDraft(res.draft);
     setRound((r) => r + 1);
   }
 
   function reset() {
     setText("");
+    setFromScreenshot(false);
+    setPhotoBlob(null);
+    setPhotos([]);
+    setShotKey((k) => k + 1);
     setDraft(null);
     setError(undefined);
   }
@@ -38,8 +68,24 @@ export function ImportTool() {
   return (
     <div className="space-y-6">
       <section className="space-y-3 rounded-xl border border-line bg-white p-4">
+        <p className="font-semibold">Option A: Start from a screenshot</p>
+        <p className="text-sm text-muted">
+          Free and automatic. The text is read on this device, and the product photo is cropped out for you. Use a
+          screenshot of one post.
+        </p>
+        <ScreenshotReader
+          key={shotKey}
+          onText={(t) => {
+            setText(t);
+            setFromScreenshot(true);
+          }}
+          onPhoto={setPhotoBlob}
+        />
+      </section>
+
+      <section className="space-y-3 rounded-xl border border-line bg-white p-4">
         <label htmlFor="post" className="block font-semibold">
-          1. Paste the WhatsApp post
+          {fromScreenshot ? "The text read from the screenshot (fix any mistakes)" : "Option B: Paste the post text"}
         </label>
         <textarea
           id="post"
@@ -56,12 +102,12 @@ export function ImportTool() {
           </p>
         )}
         <button type="button" onClick={read} disabled={busy || text.trim().length < 10} className="btn-primary">
-          {busy ? "Reading…" : "Read this post"}
+          {busy ? "Reading…" : "Fill in the listing"}
         </button>
       </section>
 
       {draft && note && <p className="rounded-md bg-amber-100 p-3 text-sm text-amber-900">{note}</p>}
-      {draft && <DraftForm key={round} draft={draft} onDone={reset} />}
+      {draft && <DraftForm key={round} draft={draft} photos={photos} reviewFirst={fromScreenshot} onDone={reset} />}
     </div>
   );
 }
@@ -92,7 +138,17 @@ function Field({
   );
 }
 
-function DraftForm({ draft, onDone }: { draft: Draft; onDone: () => void }) {
+function DraftForm({
+  draft,
+  photos,
+  reviewFirst,
+  onDone,
+}: {
+  draft: Draft;
+  photos: string[];
+  reviewFirst: boolean;
+  onDone: () => void;
+}) {
   const [state, action] = useActionState(createImportedListing, undefined);
   const [uploading, setUploading] = useState(false);
   const err = (n: string) => state?.fieldErrors?.[n]?.[0];
@@ -115,7 +171,7 @@ function DraftForm({ draft, onDone }: { draft: Draft; onDone: () => void }) {
 
   return (
     <form action={action} className="space-y-4 rounded-xl border border-line bg-white p-4">
-      <p className="font-semibold">2. Check the details, add photos, and save</p>
+      <p className="font-semibold">Check the details, add photos, and save</p>
       {state?.error && (
         <p role="alert" className="rounded-md bg-danger/10 p-2.5 text-sm text-danger">
           {state.error}
@@ -171,11 +227,14 @@ function DraftForm({ draft, onDone }: { draft: Draft; onDone: () => void }) {
         </Field>
       </div>
 
-      <PhotoUploader onBusyChange={setUploading} error={err("images")} />
+      <PhotoUploader initial={photos} onBusyChange={setUploading} error={err("images")} />
 
       <label className="flex items-center gap-2">
-        <input type="checkbox" name="publish" defaultChecked className="h-5 w-5" />
-        <span>Publish right away (untick to send it to the review list)</span>
+        <input type="checkbox" name="publish" defaultChecked={!reviewFirst} className="h-5 w-5" />
+        <span>
+          Publish right away (untick to send it to the review list
+          {reviewFirst ? ", which is the default for screenshots because the text reader can make mistakes" : ""})
+        </span>
       </label>
 
       <SubmitButton disabled={uploading} pendingText="Saving…">

@@ -9,7 +9,6 @@ import { db } from "@/lib/db";
 import { canManageListing, hasMemberAccess } from "@/lib/memberAccess";
 import { displayName, getSellerRating, reviewCountText } from "@/lib/reviews";
 import { isAdmin } from "@/lib/session";
-import { SellerPanel } from "@/components/SellerPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -59,17 +58,9 @@ export default async function ListingPage({ params }: Params) {
         <div>
           <h1 className="text-3xl font-bold">{listing.title}</h1>
           <p className="mt-2 inline-block rounded-md sticker px-3 py-1 font-display text-2xl font-bold">
-            {listing.status === "SOLD" || listing.availability === "SOLD" ? "Sold" : formatListingPrice(listing.priceCents, listing.category)}
+            {listing.status === "SOLD" ? "Sold" : formatListingPrice(listing.priceCents, listing.category)}
           </p>
         </div>
-
-        {listing.availability === "PENDING_SALE" && listing.status !== "SOLD" && listing.availability !== "SOLD" && (
-          <p className="rounded-lg bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-900">
-            Sale pending: this item may no longer be available.
-          </p>
-        )}
-
-        <SellerPanel ownerId={listing.ownerId} />
 
         <dl className="grid grid-cols-3 gap-y-2 text-sm">
           <dt className="text-muted">Category</dt>
@@ -114,7 +105,7 @@ export default async function ListingPage({ params }: Params) {
           </div>
         )}
 
-        {listing.status !== "SOLD" && listing.availability !== "SOLD" &&
+        {listing.status !== "SOLD" &&
           (isMember ? (
             <div className="rounded-lg border border-line bg-white p-4">
               <p className="font-semibold">Contact the seller</p>

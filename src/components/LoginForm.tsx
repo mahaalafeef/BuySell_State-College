@@ -36,11 +36,6 @@ export function LoginForm() {
       <SubmitButton pendingText="Logging in…" className="btn-primary w-full">
         Log in
       </SubmitButton>
-      <p className="text-center text-sm">
-        <Link href="/members/forgot" className="font-semibold text-brand underline">
-          Forgot your password?
-        </Link>
-      </p>
       <p className="text-sm text-muted">
         First time? Open the personal link we sent you on WhatsApp to choose your password. Not a member yet?{" "}
         <Link href="/join" className="font-semibold text-brand underline">

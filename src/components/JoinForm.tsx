@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { submitJoin, type JoinState } from "@/app/join-actions";
-import { JOIN_ROLES } from "@/lib/join";
+import { JOIN_REQUIRES_PROOF, JOIN_ROLES } from "@/lib/join";
 
 const TARGET_BYTES = 800 * 1024; // keep uploads small so they send quickly on mobile data
 
@@ -87,37 +87,6 @@ function Sent({ path }: { path: string }) {
   );
 }
 
-function Existing({ kind }: { kind: "approved" | "pending" }) {
-  if (kind === "approved") {
-    return (
-      <div role="alert" className="space-y-3 rounded-xl bg-amber-100 p-4 text-amber-900">
-        <p className="font-semibold">This WhatsApp number already has an account.</p>
-        <p className="text-sm">Please log in. If you forgot your password, you can ask for a reset link.</p>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/login" className="btn-primary">
-            Log in
-          </Link>
-          <Link href="/members/forgot" className="btn-ghost">
-            I forgot my password
-          </Link>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div role="alert" className="space-y-3 rounded-xl bg-amber-100 p-4 text-amber-900">
-      <p className="font-semibold">A request for this number is already waiting.</p>
-      <p className="text-sm">
-        Open the personal link you saved to check on it, or use the device you applied from. If you typed the number
-        wrong, correct it below.
-      </p>
-      <Link href="/members" className="btn-ghost">
-        Check my request
-      </Link>
-    </div>
-  );
-}
-
 export function JoinForm() {
   const [proof, setProof] = useState<{ blob: Blob; url: string } | null>(null);
   const [proofError, setProofError] = useState<string>();
@@ -171,7 +140,6 @@ export function JoinForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
-      {state?.existing && <Existing kind={state.existing} />}
       {state?.error && (
         <p role="alert" className="rounded-md bg-danger/10 p-3 text-danger">
           {state.error}
@@ -202,6 +170,7 @@ export function JoinForm() {
         </select>
       </Field>
 
+      {JOIN_REQUIRES_PROOF && (
       <div>
         <p className="mb-1 font-semibold">Proof of your connection</p>
         <p className="mb-3 text-sm text-muted">
@@ -237,6 +206,7 @@ export function JoinForm() {
           </p>
         )}
       </div>
+      )}
 
       <Field label="Anything else we should know? (optional)" name="note">
         <textarea id="join-note" name="note" rows={3} maxLength={500} className="input" />
@@ -253,8 +223,17 @@ export function JoinForm() {
         <label className="flex items-start gap-3">
           <input type="checkbox" name="consent" className="mt-1 h-5 w-5 shrink-0" />
           <span>
-            I agree that the site admin may look at my photo to confirm my connection. It is private, only the admin
-            can see it, and it is deleted as soon as my request is reviewed.
+            I am 18 or older and I agree to the{" "}
+            <Link href="/terms" target="_blank" className="underline">
+              Terms of Use
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" target="_blank" className="underline">
+              Privacy Policy
+            </Link>
+            . I understand the site is only a place to connect and is not part of any sale or rental.
+            {JOIN_REQUIRES_PROOF &&
+              " I agree that the site admin may look at my photo to confirm my connection. It is private, only the admin can see it, and it is deleted as soon as my request is reviewed."}
           </span>
         </label>
         {fe.consent && (

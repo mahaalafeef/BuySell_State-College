@@ -16,7 +16,7 @@ const FAQS: Faq[] = [
   {
     keywords: ["post", "sell", "list my", "list an", "list a", "create a listing", "add a listing", "new listing", "put up", "how do i list"],
     answer: () =>
-      "Only approved members can post. To post, tap \"Post a listing\" at the top, choose an item or housing, fill in the details, add photos if you like, and pick a passcode. Your phone number stays private. It is only used to edit your listing later.",
+      "Only approved members can post. To post, tap \"Post a listing\" at the top, choose an item or housing, fill in the details, add photos if you like,. It is saved in your account, so you can edit it later without a passcode.",
   },
   {
     keywords: ["rating", "ratings", "stars", "star rating", "rate a seller", "rate the seller", "leave a review", "write a review", "seller review", "reviews of sellers"],
@@ -26,12 +26,12 @@ const FAQS: Faq[] = [
   {
     keywords: ["edit", "change my", "modify", "update my", "delete", "remove my", "mark as sold", "mark as pending", "mark pending", "sale pending", "sold", "relist", "my listing", "my account"],
     answer: () =>
-      "Open \"My account\" in the top menu. Every listing you post while signed in is saved there, and you can edit it, mark it as pending (a sale is in progress) or sold, relist it, or delete it. For a listing you posted before accounts existed, tap \"Add an older listing\", then enter its post number (like BSC-0042) plus your passcode OR the phone number you listed with, and it moves into your account.",
+      "Open \"My account\" in the top menu. Every listing you post while signed in is saved there, and you can edit it, mark it as pending (a sale is in progress) or sold, relist it, or delete it.",
   },
   {
-    keywords: ["forgot", "lost", "passcode", "password", "listing id", "can't edit", "cant edit", "locked", "locked out"],
+    keywords: ["forgot", "lost", "passcode", "password", "listing id", "can't edit", "cant edit", "locked", "locked out", "log in", "login"],
     answer: () =>
-      "No problem. Use the phone number you entered when posting instead. On the older-listing page (My account, then \"Add an older listing\"), leave the listing ID blank and enter your phone number to see all your listings. After 5 wrong tries a listing is locked for 15 minutes. If you're still stuck, tap \"Talk to a person\".",
+      "Listings are edited from your account, so there is no passcode to remember. Log in with your WhatsApp number and password, then open \"My account\" in the top menu. If you can't log in, tap \"Talk to a person\" and our team will help.",
   },
   {
     keywords: ["approve", "approval", "review", "pending", "waiting", "not showing", "not showing up", "visible", "go live", "when will", "isn't showing", "isnt showing"],

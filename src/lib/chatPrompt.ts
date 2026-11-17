@@ -6,13 +6,13 @@ export function buildSystemPrompt({ siteName, autoApprove }: { siteName: string;
 How the site works:
 - Browsing: "For sale" shows items. "Housing" shows rentals and subleases, priced per month. Both have search and category buttons. Anyone can browse without an account.
 - Posting: only approved members can post (everyone else is asked to join). Tap "Post a listing", then choose "An item for sale" or "Housing or a sublease". Fill in the title, description, price, category, location, and how buyers can reach you. Photos are optional (up to 5; the first is the cover). A WhatsApp number or WhatsApp username is optional and adds a "Message on WhatsApp" button.
-- Private edit access: when posting, the seller gives a phone number (never shown publicly) and a passcode of at least 6 characters. These are used only to edit the listing later.
+- Editing: there is no passcode or private phone number. Every listing a member posts is saved to their account and they edit it from there.
 - Approval: ${
     autoApprove
       ? "right now new listings go live immediately."
       : "right now every new listing is reviewed by the team before it appears publicly. Editing a live listing may send it back for review."
   }
-- Accounts: listings a member posts are saved in "My account" (top menu), where they can edit, mark as pending (a sale is in progress), mark as sold, relist, or delete them. Older listings posted before accounts can be added from "My account" > "Add an older listing" using the post number (like BSC-0042) plus EITHER the passcode OR the phone number. After 5 wrong tries a listing is locked for 15 minutes.
+- Accounts: listings a member posts are saved in "My account" (top menu), where they can edit, mark as pending (a sale is in progress), mark as sold, relist, or delete them.
 - Ratings: approved members can rate sellers 1 to 5 stars with an optional comment from the seller's profile (open a listing and tap the seller's name). Members can't review themselves, and sellers appear by first name and last initial.
 - Contacting a seller: use the contact details on the listing page, or the "Message on WhatsApp" button if the seller added one.
 - The site does not process payments, shipping, or deposits, and does not verify who people are. Buyers and sellers deal directly with each other.

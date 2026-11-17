@@ -28,7 +28,7 @@ const sections: LegalSection[] = [
       "You must be at least 18 years old.",
       "Contact details and posting are limited to approved members. We decide who is approved, at our sole discretion, and we may ask for proof of your connection to Penn State or State College.",
       "We may refuse, suspend, or remove anyone's access at any time, with or without a reason.",
-      "You are responsible for keeping your password, personal member link, and listing passcodes private. Anything done with them is treated as done by you.",
+      "You are responsible for keeping your password and personal member link private. Anything done with them is treated as done by you.",
     ],
   },
   {

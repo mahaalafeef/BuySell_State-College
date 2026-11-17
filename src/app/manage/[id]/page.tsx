@@ -40,7 +40,6 @@ export default async function EditListing({
     imageUrl: listing.imageUrl ?? "",
     contact: listing.contact,
     whatsapp: listing.whatsapp ? (/^\d+$/.test(listing.whatsapp) ? `+${listing.whatsapp}` : `@${listing.whatsapp}`) : "",
-    phone: listing.phone,
   };
 
   return (

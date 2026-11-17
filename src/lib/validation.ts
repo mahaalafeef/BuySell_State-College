@@ -24,20 +24,11 @@ const base = z.object({
       (v) => normalizeWhatsapp(v) !== undefined,
       "Use a number with country code (+1 555 123 4567) or a WhatsApp username",
     ),
-  phone: z.string().trim().min(1, "Enter your phone number"),
 });
 
-export const createSchema = base.extend({
-  passcode: z.string().min(6, "Use at least 6 characters").max(64),
-});
-
-export const editSchema = base.extend({
-  // Optional: leave blank to keep the current passcode
-  passcode: z
-    .string()
-    .max(64)
-    .refine((v) => v === "" || v.length >= 6, "Use at least 6 characters"),
-});
+// Listings belong to the member's account, so there is no separate phone number or passcode to enter.
+export const createSchema = base;
+export const editSchema = base;
 
 export function toCents(price: string): number {
   return Math.round(parseFloat(price) * 100);

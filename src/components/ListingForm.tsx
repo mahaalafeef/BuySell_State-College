@@ -167,43 +167,6 @@ export function ListingForm({ mode, action, initial = {}, initialImages = [], ki
         />
       </Field>
 
-      <fieldset className="space-y-5 rounded-lg border border-line bg-white p-4">
-        <legend className="px-1 font-display text-lg font-semibold">Edit access (private)</legend>
-        <p className="text-sm text-muted">
-          Only you see this. Later, you can edit this listing with your phone number or your passcode.
-        </p>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Your phone number" name="phone" error={err("phone")}>
-            <input
-              id="phone"
-              name="phone"
-              type="tel"
-              required
-              autoComplete="tel"
-              defaultValue={v.phone}
-              className="input"
-              {...a11y("phone")}
-            />
-          </Field>
-          <Field
-            label={mode === "create" ? "Passcode" : "New passcode (optional)"}
-            name="passcode"
-            hint={mode === "create" ? "At least 6 characters." : "Leave blank to keep your current passcode."}
-            error={err("passcode")}
-          >
-            <input
-              id="passcode"
-              name="passcode"
-              type="password"
-              required={mode === "create"}
-              autoComplete="new-password"
-              className="input"
-              {...a11y("passcode")}
-            />
-          </Field>
-        </div>
-      </fieldset>
-
       {/* Spam trap: hidden from people, bots fill it in */}
       <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
         <label>

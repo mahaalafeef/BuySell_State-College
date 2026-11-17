@@ -22,7 +22,7 @@ const sections: LegalSection[] = [
       "Request to join: your name, WhatsApp number or username, how you are connected (for example, student or resident), an optional note" + (JOIN_REQUIRES_PROOF ? ", and a photo of your proof of connection." : "."),
       "Account activity: which listings belong to your account, their status, and the ratings and reviews you give or receive.",
       "Member account: a password (stored only as a one-way scrambled hash, never in readable form) and a personal sign-in link.",
-      "Listings: the title, description, price, category, condition, location or neighborhood, photos, the contact details you choose to show, an optional WhatsApp number or username, and a private phone number and passcode used only to prove the listing is yours (the passcode is stored only as a hash, and the phone number as its last 10 digits).",
+      "Listings: the title, description, price, category, condition, location or neighborhood, photos, the contact details you choose to show, an optional WhatsApp number or username. Older listings may also have a private phone number and passcode that were used to prove ownership (the passcode is stored only as a hash, and the phone number as its last 10 digits).",
       "Messages to us: your name, how to reach you, and your message, plus the recent chat conversation if you use \"Talk to a person\".",
       "Chat assistant: the questions you type to the assistant.",
       "Technical data: a one-way scrambled version of your IP address, used only to limit spam and repeated attempts. We do not store your actual IP address in our database. Our hosting provider may keep standard server logs.",
@@ -105,7 +105,7 @@ const sections: LegalSection[] = [
   {
     title: "Your choices",
     paragraphs: [
-      "You can edit or delete your own listings at any time using your passcode. You can ask us to see, correct, or delete the information we hold about you, or to close your membership. We may need to verify who you are first, and we may keep some information where the law allows or requires it.",
+      "You can edit or delete your own listings at any time from your account. You can ask us to see, correct, or delete the information we hold about you, or to close your membership. We may need to verify who you are first, and we may keep some information where the law allows or requires it.",
       contactLine,
     ],
   },

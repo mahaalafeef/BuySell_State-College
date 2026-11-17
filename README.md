@@ -84,5 +84,5 @@ Seller contact details (the contact text and the WhatsApp button/redirect) are s
 
 - Every listing a signed-in member posts is saved to their account (`Listing.ownerId`). `/account` lists them with buttons to edit, mark as **Pending** (a sale is in progress) or **Sold**, relist, and delete (with a confirmation).
 - `PENDING` still means "awaiting admin approval" and is shown as "Awaiting approval". `SALE_PENDING` is the seller's own "Pending" status. Sellers can only switch listings that have already been approved, so the admin's review can't be skipped.
-- Older listings move into an account when the member opens them with the post number plus passcode or phone number (`/manage`).
+- The posting form no longer asks for a phone number or passcode: listings are edited from the account. The database still needs those two columns, so new listings get random, unguessable values for them.
 - Members can rate sellers 1 to 5 stars with an optional comment (`/sellers/[id]`, `src/app/review-actions.ts`). One review per member per seller, no self-reviews, members only. The admin can delete any review from the seller page.

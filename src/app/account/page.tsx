@@ -109,19 +109,6 @@ export default async function AccountPage() {
         )}
       </section>
 
-      <section aria-labelledby="older" className="rounded-lg border border-line bg-white p-4">
-        <h2 id="older" className="font-semibold">
-          Posted something before accounts? 
-        </h2>
-        <p className="mt-1 text-sm text-muted">
-          Open the old listing with its post number and passcode (or the phone number you used), and it is added to
-          your account automatically.
-        </p>
-        <Link href="/manage" className="btn-ghost mt-3">
-          Add an older listing
-        </Link>
-      </section>
-
       <section aria-labelledby="my-reviews" className="space-y-3">
         <h2 id="my-reviews" className="text-xl font-bold">
           Recent reviews about you

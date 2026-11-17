@@ -1,5 +1,6 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import type { ListingStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -85,9 +86,6 @@ export async function createListing(_prev: FormState, fd: FormData): Promise<For
   const parsed = createSchema.safeParse(rawForm(fd));
   if (!parsed.success) return { fieldErrors: parsed.error.flatten().fieldErrors, values };
 
-  const phone = normalizePhone(parsed.data.phone);
-  if (!phone) return { fieldErrors: { phone: ["Enter a valid phone number"] }, values };
-
   const d = parsed.data;
   const listing = await db.listing.create({
     data: {
@@ -101,8 +99,10 @@ export async function createListing(_prev: FormState, fd: FormData): Promise<For
       imageUrl: d.images[0] ?? null,
       contact: d.contact,
       whatsapp: normalizeWhatsapp(d.whatsapp) ?? null,
-      phone,
-      passcodeHash: hashPasscode(d.passcode),
+      // Members edit from their account, so no phone or passcode is collected. These columns are required,
+      // so they get random values that nobody can guess (nothing can be opened with them).
+      phone: `acct-${randomBytes(6).toString("hex")}`,
+      passcodeHash: hashPasscode(randomBytes(16).toString("hex")),
       status: await statusAfterChange(null),
       ownerId: me?.id ?? null,
     },
@@ -193,9 +193,6 @@ export async function updateListing(id: string, _prev: FormState, fd: FormData):
   const parsed = editSchema.safeParse(rawForm(fd));
   if (!parsed.success) return { fieldErrors: parsed.error.flatten().fieldErrors, values };
 
-  const phone = normalizePhone(parsed.data.phone);
-  if (!phone) return { fieldErrors: { phone: ["Enter a valid phone number"] }, values };
-
   const d = parsed.data;
   const updated = await db.listing.update({
     where: { id },
@@ -210,8 +207,6 @@ export async function updateListing(id: string, _prev: FormState, fd: FormData):
       imageUrl: d.images[0] ?? null,
       contact: d.contact,
       whatsapp: normalizeWhatsapp(d.whatsapp) ?? null,
-      phone,
-      ...(d.passcode ? { passcodeHash: hashPasscode(d.passcode) } : {}),
       status: await statusAfterChange(listing.status),
       rejectionReason: null,
     },

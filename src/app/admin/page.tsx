@@ -124,7 +124,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
               <p className="mt-2 line-clamp-3 whitespace-pre-wrap text-sm">{l.description}</p>
               <p className="mt-2 text-sm text-muted">
-                Public contact: {l.contact}. Seller phone: {l.phone}.
+                Public contact: {l.contact}.
               </p>
               {l.rejectionReason && <p className="mt-1 text-sm text-danger">Reason given: {l.rejectionReason}</p>}
 

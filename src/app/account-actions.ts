@@ -11,7 +11,7 @@ import { currentMemberId } from "@/lib/accountAuth";
 import { hashPasscode, normalizePhone, verifyPasscode } from "@/lib/security";
 import { isAdmin } from "@/lib/session";
 import { getAutoApprove } from "@/lib/settings";
-import { editSchema, toCents } from "@/lib/validation";
+import { listingInput, toCents } from "@/lib/listingInput";
 import { normalizeWhatsapp } from "@/lib/whatsapp";
 
 export type Availability = "AVAILABLE" | "PENDING_SALE" | "SOLD";
@@ -70,16 +70,22 @@ export async function updateOwnedListing(id: string, _prev: FormState, fd: FormD
   const values: Record<string, string> = {};
   for (const [k, v] of fd.entries()) if (typeof v === "string" && k !== "passcode") values[k] = v;
 
-  const parsed = editSchema.safeParse({
+  const parsed = listingInput.safeParse({
     ...Object.fromEntries(fd),
     images: fd.getAll("images").filter((x): x is string => typeof x === "string" && x !== ""),
   });
   if (!parsed.success) return { fieldErrors: parsed.error.flatten().fieldErrors, values };
 
-  const phone = normalizePhone(parsed.data.phone);
-  if (!phone) return { fieldErrors: { phone: ["Enter a valid phone number"] }, values };
-
   const d = parsed.data;
+
+  // The private phone is optional here: blank keeps the one the listing already has
+  let phone = listing.phone;
+  if (d.phone) {
+    const cleaned = normalizePhone(d.phone);
+    if (!cleaned) return { fieldErrors: { phone: ["Enter a valid phone number"] }, values };
+    phone = cleaned;
+  }
+
   const updated = await db.listing.update({
     where: { id },
     data: {

@@ -22,7 +22,7 @@ export default async function AccountPage() {
     db.listing.findMany({ where: { ownerId: me.id }, orderBy: { createdAt: "desc" } }),
     getSellerRating(me.id),
     db.review.findMany({
-      where: { sellerId: me.id },
+      where: { sellerId: me.id, reviewer: { status: "APPROVED" } },
       orderBy: { createdAt: "desc" },
       take: 5,
       include: { reviewer: { select: { name: true } } },

@@ -86,3 +86,11 @@ Seller contact details (the contact text and the WhatsApp button/redirect) are s
 - `PENDING` still means "awaiting admin approval" and is shown as "Awaiting approval". `SALE_PENDING` is the seller's own "Pending" status. Sellers can only switch listings that have already been approved, so the admin's review can't be skipped.
 - The posting form no longer asks for a phone number or passcode: listings are edited from the account. The database still needs those two columns, so new listings get random, unguessable values for them.
 - Members can rate sellers 1 to 5 stars with an optional comment (`/sellers/[id]`, `src/app/review-actions.ts`). One review per member per seller, no self-reviews, members only. The admin can delete any review from the seller page.
+
+## Sellers list and bans (admin)
+
+`/admin/sellers` lists members with their listings and star ratings. Tabs: **Sellers** (members who have posted), **All members**, **Banned**.
+
+- **Ban** sets the member's status to `BANNED`: they are logged out immediately (the live check in `lib/memberAccess.ts` and the header), can't log in, and can't apply again with the same WhatsApp number. Their live listings are hidden (set to "Not approved" with the reason "Seller removed from the site"), their profile disappears, and reviews they wrote are no longer shown.
+- **Unban** makes them an approved member again and moves those hidden listings back to the review list.
+- "Remove access" on `/admin/join` is the softer option: it logs the person out but does not hide their listings, and they could apply again.

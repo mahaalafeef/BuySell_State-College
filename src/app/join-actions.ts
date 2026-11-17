@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { notifyAdminJoin } from "@/lib/email";
-import { JOIN_REQUIRES_PROOF, JOIN_ROLES, MAX_PROOF_BYTES } from "@/lib/join";
+import { BAN_REASON, JOIN_REQUIRES_PROOF, JOIN_ROLES, MAX_PROOF_BYTES } from "@/lib/join";
 import { memberPath, setRequestCookie } from "@/lib/members";
 import { checkLimit, ipHash, recordEvent } from "@/lib/ratelimit";
 import { isAdmin } from "@/lib/session";
@@ -54,8 +54,8 @@ export async function submitJoin(fd: FormData): Promise<JoinState> {
   }
   await recordEvent("join", hash);
 
-  // Don't create duplicates for the same person
-  const existing = await db.joinRequest.count({ where: { whatsapp, status: "PENDING" } });
+  // Don't create duplicates for the same person. Someone who was banned gets the same quiet "received" answer.
+  const existing = await db.joinRequest.count({ where: { whatsapp, status: { in: ["PENDING", "BANNED"] } } });
   if (existing > 0) return { ok: true };
 
   const created = await db.joinRequest.create({
@@ -76,7 +76,10 @@ async function requireAdmin() {
 
 function refresh() {
   revalidatePath("/admin/join");
+  revalidatePath("/admin/sellers");
   revalidatePath("/admin");
+  revalidatePath("/");
+  revalidatePath("/housing");
 }
 
 // Deciding a request also deletes the proof photo, so we keep as little personal data as possible.
@@ -106,6 +109,36 @@ export async function revokeJoin(id: string) {
   await db.joinRequest.update({
     where: { id },
     data: { status: "REJECTED", decidedNote: "Access removed", decidedAt: new Date() },
+  });
+  refresh();
+}
+
+/**
+ * Bans a member. They are logged out at once and can't log back in or apply again with the same number,
+ * and all their live listings are hidden. Unbanning puts those listings back in the review list.
+ */
+export async function banMember(id: string, fd: FormData) {
+  await requireAdmin();
+  const row = await db.joinRequest.findUnique({ where: { id }, select: { status: true } });
+  if (row?.status !== "APPROVED") return;
+  const reason = String(fd.get("reason") ?? "").trim().slice(0, 300);
+  await db.joinRequest.update({ where: { id }, data: { status: "BANNED", decidedNote: reason || "Banned" } });
+  await db.listing.updateMany({
+    where: { ownerId: id, status: { in: ["PENDING", "APPROVED", "SALE_PENDING"] } },
+    data: { status: "REJECTED", rejectionReason: BAN_REASON },
+  });
+  refresh();
+}
+
+export async function unbanMember(id: string) {
+  await requireAdmin();
+  const row = await db.joinRequest.findUnique({ where: { id }, select: { status: true } });
+  if (row?.status !== "BANNED") return;
+  await db.joinRequest.update({ where: { id }, data: { status: "APPROVED", decidedNote: null } });
+  // Their hidden listings go back to "awaiting approval", so nothing goes live without a look
+  await db.listing.updateMany({
+    where: { ownerId: id, status: "REJECTED", rejectionReason: BAN_REASON },
+    data: { status: "PENDING", rejectionReason: null },
   });
   refresh();
 }

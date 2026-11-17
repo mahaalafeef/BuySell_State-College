@@ -56,6 +56,15 @@ export default async function StatusPage({ searchParams }: { searchParams: Promi
         </section>
       )}
 
+      {row.status === "BANNED" && (
+        <section className="space-y-3 rounded-xl border border-line bg-white p-5">
+          <p className="inline-block rounded-full bg-danger/10 px-3 py-1 text-sm font-semibold text-danger">
+            Account not active
+          </p>
+          <p>This account has been removed from the site. If you think this is a mistake, please contact the site team.</p>
+        </section>
+      )}
+
       {row.status === "REJECTED" && (
         <section className="space-y-3 rounded-xl border border-line bg-white p-5">
           <p className="inline-block rounded-full bg-danger/10 px-3 py-1 text-sm font-semibold text-danger">

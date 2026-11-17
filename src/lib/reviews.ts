@@ -10,7 +10,7 @@ export function displayName(fullName: string): string {
 
 export async function getSellerRating(sellerId: string): Promise<{ average: number; count: number }> {
   const agg = await db.review.aggregate({
-    where: { sellerId },
+    where: { sellerId, reviewer: { status: "APPROVED" } },
     _avg: { rating: true },
     _count: { _all: true },
   });

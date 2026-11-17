@@ -30,7 +30,7 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
     isAdmin(),
     getSellerRating(id),
     db.review.findMany({
-      where: { sellerId: id },
+      where: { sellerId: id, reviewer: { status: "APPROVED" } },
       orderBy: { createdAt: "desc" },
       take: 50,
       include: { reviewer: { select: { name: true } } },

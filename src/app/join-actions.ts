@@ -5,13 +5,15 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { notifyAdminJoin } from "@/lib/email";
-import { BAN_REASON, JOIN_REQUIRES_PROOF, JOIN_ROLES, MAX_PROOF_BYTES } from "@/lib/join";
+import { JOIN_ROLES, MAX_PROOF_BYTES } from "@/lib/join";
 import { memberPath, setRequestCookie } from "@/lib/members";
 import { checkLimit, ipHash, recordEvent } from "@/lib/ratelimit";
 import { isAdmin } from "@/lib/session";
 import { normalizeWhatsapp } from "@/lib/whatsapp";
 
-export type JoinState = { ok?: boolean; path?: string; error?: string; fieldErrors?: Record<string, string> } | undefined;
+export type JoinState =
+  | { ok?: boolean; path?: string; existing?: "approved" | "pending"; error?: string; fieldErrors?: Record<string, string> }
+  | undefined;
 
 /** Public: someone asks to join the group. */
 export async function submitJoin(fd: FormData): Promise<JoinState> {
@@ -32,9 +34,7 @@ export async function submitJoin(fd: FormData): Promise<JoinState> {
   if (!consent) fieldErrors.consent = "Please tick the box to continue.";
 
   let bytes: Uint8Array<ArrayBuffer> | null = null;
-  if (!JOIN_REQUIRES_PROOF) {
-    // Proof photos are switched off: ignore any file that was sent
-  } else if (!(proof instanceof File) || proof.size === 0) {
+  if (!(proof instanceof File) || proof.size === 0) {
     fieldErrors.proof = "Please add a photo of your proof.";
   } else if (proof.type !== "image/jpeg") {
     fieldErrors.proof = "Please choose a photo again. We convert it automatically.";
@@ -44,7 +44,7 @@ export async function submitJoin(fd: FormData): Promise<JoinState> {
     bytes = new Uint8Array(await proof.arrayBuffer());
   }
 
-  if (Object.keys(fieldErrors).length > 0 || !whatsapp || (JOIN_REQUIRES_PROOF && !bytes)) {
+  if (Object.keys(fieldErrors).length > 0 || !whatsapp || !bytes) {
     return { error: "Please fix the highlighted fields.", fieldErrors };
   }
 
@@ -54,12 +54,16 @@ export async function submitJoin(fd: FormData): Promise<JoinState> {
   }
   await recordEvent("join", hash);
 
-  // Don't create duplicates for the same person. Someone who was banned gets the same quiet "received" answer.
-  const existing = await db.joinRequest.count({ where: { whatsapp, status: { in: ["PENDING", "BANNED"] } } });
-  if (existing > 0) return { ok: true };
+  // One account per number: if this number already has an account or a waiting request, say so
+  const holder = await db.joinRequest.findFirst({
+    where: { whatsapp, status: { in: ["APPROVED", "PENDING"] } },
+    select: { status: true },
+    orderBy: { createdAt: "desc" },
+  });
+  if (holder) return { existing: holder.status === "APPROVED" ? "approved" : "pending" };
 
   const created = await db.joinRequest.create({
-    data: { name, whatsapp, role, note: note || null, proof: bytes, hasProof: bytes !== null },
+    data: { name, whatsapp, role, note: note || null, proof: bytes, hasProof: true },
   });
   await setRequestCookie(created.id); // lets them check on it later from this browser
   await notifyAdminJoin({ name, role });
@@ -76,16 +80,20 @@ async function requireAdmin() {
 
 function refresh() {
   revalidatePath("/admin/join");
-  revalidatePath("/admin/sellers");
   revalidatePath("/admin");
-  revalidatePath("/");
-  revalidatePath("/housing");
 }
 
 // Deciding a request also deletes the proof photo, so we keep as little personal data as possible.
 
 export async function approveJoin(id: string) {
   await requireAdmin();
+
+  // Never approve a second account for a number that already has one
+  const row = await db.joinRequest.findUnique({ where: { id }, select: { whatsapp: true } });
+  if (row) {
+    const clash = await db.joinRequest.count({ where: { whatsapp: row.whatsapp, status: "APPROVED", NOT: { id } } });
+    if (clash > 0) redirect("/admin/join?duplicate=1");
+  }
   await db.joinRequest.update({
     where: { id },
     data: { status: "APPROVED", proof: null, hasProof: false, decidedAt: new Date(), decidedNote: null },
@@ -109,36 +117,6 @@ export async function revokeJoin(id: string) {
   await db.joinRequest.update({
     where: { id },
     data: { status: "REJECTED", decidedNote: "Access removed", decidedAt: new Date() },
-  });
-  refresh();
-}
-
-/**
- * Bans a member. They are logged out at once and can't log back in or apply again with the same number,
- * and all their live listings are hidden. Unbanning puts those listings back in the review list.
- */
-export async function banMember(id: string, fd: FormData) {
-  await requireAdmin();
-  const row = await db.joinRequest.findUnique({ where: { id }, select: { status: true } });
-  if (row?.status !== "APPROVED") return;
-  const reason = String(fd.get("reason") ?? "").trim().slice(0, 300);
-  await db.joinRequest.update({ where: { id }, data: { status: "BANNED", decidedNote: reason || "Banned" } });
-  await db.listing.updateMany({
-    where: { ownerId: id, status: { in: ["PENDING", "APPROVED", "SALE_PENDING"] } },
-    data: { status: "REJECTED", rejectionReason: BAN_REASON },
-  });
-  refresh();
-}
-
-export async function unbanMember(id: string) {
-  await requireAdmin();
-  const row = await db.joinRequest.findUnique({ where: { id }, select: { status: true } });
-  if (row?.status !== "BANNED") return;
-  await db.joinRequest.update({ where: { id }, data: { status: "APPROVED", decidedNote: null } });
-  // Their hidden listings go back to "awaiting approval", so nothing goes live without a look
-  await db.listing.updateMany({
-    where: { ownerId: id, status: "REJECTED", rejectionReason: BAN_REASON },
-    data: { status: "PENDING", rejectionReason: null },
   });
   refresh();
 }

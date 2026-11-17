@@ -18,10 +18,10 @@ function show(whatsapp: string) {
   return /^\d+$/.test(whatsapp) ? `+${whatsapp}` : `@${whatsapp}`;
 }
 
-export default async function JoinInbox({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
+export default async function JoinInbox({ searchParams }: { searchParams: Promise<{ status?: string; duplicate?: string }> }) {
   if (!(await isAdmin())) redirect("/admin/login");
 
-  const { status } = await searchParams;
+  const { status, duplicate } = await searchParams;
   const tab: Tab = (TABS as readonly string[]).includes(status ?? "") ? (status as Tab) : "PENDING";
   const groupLink = process.env.WHATSAPP_GROUP_LINK; // private: only used here, on the server
 
@@ -34,6 +34,16 @@ export default async function JoinInbox({ searchParams }: { searchParams: Promis
     }),
     db.joinRequest.groupBy({ by: ["status"], _count: { _all: true } }),
   ]);
+  // Numbers that already belong to an approved member (a second account is never allowed)
+  const approvedNumbers = new Set<string>(
+    (
+      await db.joinRequest.findMany({
+        where: { status: "APPROVED", whatsapp: { in: requests.map((r) => r.whatsapp) } },
+        select: { whatsapp: true },
+      })
+    ).map((r) => r.whatsapp),
+  );
+  const resetCount = await db.joinRequest.count({ where: { status: "APPROVED", resetRequestedAt: { not: null } } });
   const countOf = (s: Tab) => counts.find((c) => c.status === s)?._count._all ?? 0;
 
   const chat = (whatsapp: string, text?: string) =>
@@ -43,10 +53,22 @@ export default async function JoinInbox({ searchParams }: { searchParams: Promis
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold">Join requests</h1>
-        <Link href="/admin" className="btn-ghost">
-          Back to listings
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/admin/resets" className="btn-ghost">
+            Password resets{resetCount > 0 ? ` (${resetCount} new)` : ""}
+          </Link>
+          <Link href="/admin" className="btn-ghost">
+            Back to listings
+          </Link>
+        </div>
       </div>
+
+      {duplicate && (
+        <p role="alert" className="rounded-xl bg-danger/10 p-4 text-sm text-danger">
+          That number already has an approved account, so a second one can&rsquo;t be approved. Reject the request, or
+          remove the existing member's access first.
+        </p>
+      )}
 
       {!groupLink && (
         <p className="rounded-xl bg-amber-100 p-4 text-sm text-amber-900">
@@ -107,15 +129,21 @@ export default async function JoinInbox({ searchParams }: { searchParams: Promis
                   />
                 </details>
               ) : (
-                tab !== "PENDING" && <p className="mt-3 text-sm text-muted">No proof photo on file.</p>
+                <p className="mt-3 text-sm text-muted">Proof photo deleted after review.</p>
               )}
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {tab === "PENDING" && (
                   <>
-                    <form action={approveJoin.bind(null, r.id)}>
-                      <button className="btn-primary">Approve</button>
-                    </form>
+                    {approvedNumbers.has(r.whatsapp) ? (
+                      <p className="rounded-md bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-900">
+                        This number already has an account
+                      </p>
+                    ) : (
+                      <form action={approveJoin.bind(null, r.id)}>
+                        <button className="btn-primary">Approve</button>
+                      </form>
+                    )}
                     <form action={rejectJoin.bind(null, r.id)} className="flex gap-2">
                       <input name="reason" placeholder="Reason (optional)" aria-label={`Reason for rejecting ${r.name}`} className="input w-44" />
                       <button className="btn-ghost">Reject</button>

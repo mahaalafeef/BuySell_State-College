@@ -1,36 +1,44 @@
 "use client";
 
-import { useActionState } from "react";
-import type { ReviewState } from "@/app/review-actions";
+import { useActionState, useState } from "react";
+import { saveReview } from "@/app/account-actions";
 import { SubmitButton } from "./SubmitButton";
 
 export function ReviewForm({
-  action,
-  initialRating,
-  initialComment,
+  sellerId,
+  existing,
 }: {
-  action: (prev: ReviewState, fd: FormData) => Promise<ReviewState>;
-  initialRating?: number;
-  initialComment?: string;
+  sellerId: string;
+  existing?: { rating: number; comment: string };
 }) {
-  const [state, formAction] = useActionState(action, undefined);
+  const [state, action] = useActionState(saveReview.bind(null, sellerId), undefined);
+  const [rating, setRating] = useState(existing?.rating ?? 0);
 
   return (
-    <form action={formAction} className="space-y-3 rounded-lg border border-line bg-white p-4">
+    <form action={action} className="space-y-3 rounded-xl border border-line bg-white p-4">
+      <h3 className="text-lg font-bold">{existing ? "Your review" : "Leave a review"}</h3>
+
       <fieldset>
-        <legend className="font-semibold">{initialRating ? "Your review" : "Rate this seller"}</legend>
-        <div className="mt-2 flex flex-wrap gap-4">
-          {[5, 4, 3, 2, 1].map((n) => (
-            <label key={n} className="flex items-center gap-1.5">
+        <legend className="mb-1 text-sm font-semibold">Your rating</legend>
+        <div className="flex gap-1">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <label
+              key={n}
+              className={`cursor-pointer rounded-md px-0.5 text-3xl leading-none focus-within:ring-2 focus-within:ring-brand ${
+                n <= rating ? "text-amber-500" : "text-line"
+              }`}
+            >
               <input
                 type="radio"
                 name="rating"
                 value={n}
-                defaultChecked={initialRating === n}
+                checked={rating === n}
+                onChange={() => setRating(n)}
                 required
-                className="h-5 w-5"
+                className="sr-only"
               />
-              <span>
+              <span aria-hidden>★</span>
+              <span className="sr-only">
                 {n} {n === 1 ? "star" : "stars"}
               </span>
             </label>
@@ -39,31 +47,31 @@ export function ReviewForm({
       </fieldset>
 
       <div>
-        <label htmlFor="review-comment" className="block font-semibold">
+        <label htmlFor="review-comment" className="mb-1 block text-sm font-semibold">
           Comment (optional)
         </label>
         <textarea
           id="review-comment"
           name="comment"
           rows={3}
-          maxLength={500}
-          defaultValue={initialComment ?? ""}
+          maxLength={600}
+          defaultValue={existing?.comment}
+          placeholder="How was dealing with this seller?"
           className="input"
-          placeholder="How was it dealing with this seller? Please don't include phone numbers or other private details."
         />
       </div>
 
       {state?.error && (
-        <p role="alert" className="text-danger">
+        <p role="alert" className="rounded-md bg-danger/10 p-2.5 text-sm text-danger">
           {state.error}
         </p>
       )}
       {state?.ok && (
-        <p role="status" className="text-ok">
-          Thanks! Your review is saved.
+        <p role="status" className="rounded-md bg-ok/10 p-2.5 text-sm text-ok">
+          Thanks, your review was saved.
         </p>
       )}
-      <SubmitButton pendingText="Saving…">{initialRating ? "Update review" : "Post review"}</SubmitButton>
+      <SubmitButton pendingText="Saving…">{existing ? "Update review" : "Post review"}</SubmitButton>
     </form>
   );
 }

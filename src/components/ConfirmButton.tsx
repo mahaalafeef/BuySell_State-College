@@ -1,17 +1,18 @@
 "use client";
 
-/** A submit button that asks "are you sure?" first. Put it inside a form. */
+/** A submit button that asks "Are you sure?" first. */
 export function ConfirmButton({
-  message,
-  className,
   children,
+  message,
+  className = "btn-danger",
 }: {
+  children: React.ReactNode;
   message: string;
   className?: string;
-  children: React.ReactNode;
 }) {
   return (
     <button
+      type="submit"
       className={className}
       onClick={(e) => {
         if (!window.confirm(message)) e.preventDefault();

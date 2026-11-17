@@ -241,8 +241,8 @@ export async function setListingStatus(id: string, next: "APPROVED" | "SALE_PEND
   }
 
   if (status && status !== current) {
-    await db.listing.update({ where: { id }, data: { status } });
-    if (status === "PENDING") await notifyAdminPending({ ...listing, status }, "edited");
+    const updated = await db.listing.update({ where: { id }, data: { status } });
+    if (updated.status === "PENDING") await notifyAdminPending(updated, "edited");
   }
   refresh();
   revalidatePath(`/listings/${id}`);

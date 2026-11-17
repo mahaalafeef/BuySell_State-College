@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { submitJoin, type JoinState } from "@/app/join-actions";
+import { ForgotPassword } from "./ForgotPassword";
 import { JOIN_REQUIRES_PROOF, JOIN_ROLES } from "@/lib/join";
 
 const TARGET_BYTES = 800 * 1024; // keep uploads small so they send quickly on mobile data
@@ -132,6 +133,30 @@ export function JoinForm() {
     ) : (
       <p role="status" className="rounded-xl bg-ok/10 p-5 text-lg text-ok">
         We already have a request from you. Open the personal link you saved to check on it.
+      </p>
+    );
+  }
+
+  if (state?.exists === "account") {
+    return (
+      <div className="space-y-5">
+        <div role="status" className="space-y-3 rounded-xl border border-line bg-white p-5">
+          <p className="text-lg font-semibold">This WhatsApp number already has an account.</p>
+          <p>Each number can only have one account, so there is no need to join again. Please log in.</p>
+          <Link href="/login" className="btn-primary">
+            Log in
+          </Link>
+        </div>
+        <ForgotPassword initialNumber={state.number} />
+      </div>
+    );
+  }
+
+  if (state?.exists === "pending") {
+    return (
+      <p role="status" className="rounded-xl bg-amber-100 p-5 text-lg text-amber-900">
+        We already have a request from this WhatsApp number, and it is waiting for review. We will message you on
+        WhatsApp when it is decided, so there is no need to send another one.
       </p>
     );
   }

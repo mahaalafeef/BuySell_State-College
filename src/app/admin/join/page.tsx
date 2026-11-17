@@ -30,7 +30,7 @@ export default async function JoinInbox({ searchParams }: { searchParams: Promis
       where: { status: tab },
       orderBy: { createdAt: "desc" },
       take: 100,
-      select: { id: true, name: true, whatsapp: true, role: true, note: true, hasProof: true, decidedNote: true, passwordHash: true, createdAt: true },
+      select: { id: true, name: true, whatsapp: true, role: true, note: true, hasProof: true, decidedNote: true, passwordHash: true, resetRequestedAt: true, createdAt: true },
     }),
     db.joinRequest.groupBy({ by: ["status"], _count: { _all: true } }),
   ]);
@@ -91,6 +91,14 @@ export default async function JoinInbox({ searchParams }: { searchParams: Promis
               </p>
               {tab === "APPROVED" && (
                 <p className="mt-1 text-sm text-muted">{r.passwordHash ? "Password set." : "Hasn't chosen a password yet."}</p>
+              )}
+              {tab === "APPROVED" && r.resetRequestedAt && (
+                <p className="mt-1 text-sm font-semibold text-danger">
+                  Asked for a password reset.{" "}
+                  <Link href="/admin/resets" className="underline">
+                    Open resets
+                  </Link>
+                </p>
               )}
               {r.note && <p className="mt-1 whitespace-pre-wrap text-sm">{r.note}</p>}
               {r.decidedNote && <p className="mt-1 text-sm text-danger">Reason: {r.decidedNote}</p>}

@@ -11,7 +11,17 @@ import { checkLimit, ipHash, recordEvent } from "@/lib/ratelimit";
 import { isAdmin } from "@/lib/session";
 import { normalizeWhatsapp } from "@/lib/whatsapp";
 
-export type JoinState = { ok?: boolean; path?: string; error?: string; fieldErrors?: Record<string, string> } | undefined;
+export type JoinState =
+  | {
+      ok?: boolean;
+      path?: string;
+      error?: string;
+      fieldErrors?: Record<string, string>;
+      // This WhatsApp number already has an account, or a request that is still being reviewed
+      exists?: "account" | "pending";
+      number?: string;
+    }
+  | undefined;
 
 /** Public: someone asks to join the group. */
 export async function submitJoin(fd: FormData): Promise<JoinState> {
@@ -54,9 +64,15 @@ export async function submitJoin(fd: FormData): Promise<JoinState> {
   }
   await recordEvent("join", hash);
 
-  // Don't create duplicates for the same person. Someone who was banned gets the same quiet "received" answer.
-  const existing = await db.joinRequest.count({ where: { whatsapp, status: { in: ["PENDING", "BANNED"] } } });
-  if (existing > 0) return { ok: true };
+  // One account per WhatsApp number. Someone who already has an account is sent to log in or reset their password,
+  // and someone who was banned gets the same quiet "received" answer as before.
+  const same = await db.joinRequest.findMany({
+    where: { whatsapp, status: { in: ["APPROVED", "PENDING", "BANNED"] } },
+    select: { status: true },
+  });
+  if (same.some((r) => r.status === "BANNED")) return { ok: true };
+  if (same.some((r) => r.status === "APPROVED")) return { exists: "account", number: whatsapp };
+  if (same.some((r) => r.status === "PENDING")) return { exists: "pending", number: whatsapp };
 
   const created = await db.joinRequest.create({
     data: { name, whatsapp, role, note: note || null, proof: bytes, hasProof: bytes !== null },
@@ -77,6 +93,7 @@ async function requireAdmin() {
 function refresh() {
   revalidatePath("/admin/join");
   revalidatePath("/admin/sellers");
+  revalidatePath("/admin/resets");
   revalidatePath("/admin");
   revalidatePath("/");
   revalidatePath("/housing");
@@ -86,6 +103,24 @@ function refresh() {
 
 export async function approveJoin(id: string) {
   await requireAdmin();
+  // A number can only have one account. If this one already has one, this request is closed instead of approved.
+  const row = await db.joinRequest.findUnique({ where: { id }, select: { whatsapp: true } });
+  if (!row) return;
+  const other = await db.joinRequest.count({ where: { whatsapp: row.whatsapp, status: "APPROVED", id: { not: id } } });
+  if (other > 0) {
+    await db.joinRequest.update({
+      where: { id },
+      data: {
+        status: "REJECTED",
+        proof: null,
+        hasProof: false,
+        decidedAt: new Date(),
+        decidedNote: "This WhatsApp number already has an account",
+      },
+    });
+    refresh();
+    return;
+  }
   await db.joinRequest.update({
     where: { id },
     data: { status: "APPROVED", proof: null, hasProof: false, decidedAt: new Date(), decidedNote: null },
@@ -146,7 +181,17 @@ export async function unbanMember(id: string) {
 /** Clears a member's password, so their personal link lets them choose a new one. */
 export async function resetMemberPassword(id: string) {
   await requireAdmin();
-  await db.joinRequest.update({ where: { id }, data: { passwordHash: null, failedAttempts: 0, lockedUntil: null } });
+  await db.joinRequest.update({
+    where: { id },
+    data: { passwordHash: null, failedAttempts: 0, lockedUntil: null, resetRequestedAt: null },
+  });
+  refresh();
+}
+
+/** Closes a password reset request without changing anything (for example, if it wasn't the member). */
+export async function dismissReset(id: string) {
+  await requireAdmin();
+  await db.joinRequest.update({ where: { id }, data: { resetRequestedAt: null } });
   refresh();
 }
 

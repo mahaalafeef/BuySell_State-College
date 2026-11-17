@@ -94,3 +94,9 @@ Seller contact details (the contact text and the WhatsApp button/redirect) are s
 - **Ban** sets the member's status to `BANNED`: they are logged out immediately (the live check in `lib/memberAccess.ts` and the header), can't log in, and can't apply again with the same WhatsApp number. Their live listings are hidden (set to "Not approved" with the reason "Seller removed from the site"), their profile disappears, and reviews they wrote are no longer shown.
 - **Unban** makes them an approved member again and moves those hidden listings back to the review list.
 - "Remove access" on `/admin/join` is the softer option: it logs the person out but does not hide their listings, and they could apply again.
+
+## One account per WhatsApp number, and forgotten passwords
+
+- Joining with a number that already has an approved account does not create anything. The form tells the person to log in and offers "Forgot your password?". A number with a request still being reviewed is told to wait, and banned numbers get the usual quiet "received" answer. `approveJoin` also refuses to approve a second request for a number that already has an account.
+- "Forgot your password?" (on `/login` and after a duplicate join) only sets `JoinRequest.resetRequestedAt` and emails the admin. Nothing is reset automatically, so nobody can take over an account just by knowing a number.
+- `/admin/resets` lists the requests in order: check with the person on WhatsApp, press Reset password, then send the reset link. Resetting clears the request. The reset link works because `/enter` lets a member with no password choose one.

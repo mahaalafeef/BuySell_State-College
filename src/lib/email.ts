@@ -67,3 +67,12 @@ export async function notifyAdminJoin(req: { name: string; role: string }) {
     <p><a href="${siteUrl()}/admin/join">Review it in the admin page</a></p>`;
   await sendToAdmin(`Join request from ${req.name}`, html);
 }
+
+export async function notifyAdminReset(req: { name: string }) {
+  const html = `
+    <h2>Password reset requested</h2>
+    <p><strong>${esc(req.name)}</strong> says they forgot their password.</p>
+    <p>Message them on WhatsApp to check it is really them, then reset it from the admin page.</p>
+    <p><a href="${siteUrl()}/admin/resets">Open password reset requests</a></p>`;
+  await sendToAdmin(`Password reset requested by ${req.name}`, html);
+}

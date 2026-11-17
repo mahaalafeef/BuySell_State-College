@@ -94,6 +94,9 @@ model JoinRequest {
   createdAt   DateTime  @default(now())
   decidedAt   DateTime?
 
+  // When the member last asked for a password reset (cleared once the admin deals with it)
+  resetRequestedAt DateTime?
+
   listings        Listing[] @relation("ListingOwner")
   reviewsReceived Review[]  @relation("SellerReviews")
   reviewsWritten  Review[]  @relation("ReviewAuthor")

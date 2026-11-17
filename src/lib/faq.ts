@@ -31,7 +31,7 @@ const FAQS: Faq[] = [
   {
     keywords: ["forgot", "lost", "passcode", "password", "listing id", "can't edit", "cant edit", "locked", "locked out", "log in", "login"],
     answer: () =>
-      "Listings are edited from your account, so there is no passcode to remember. Log in with your WhatsApp number and password, then open \"My account\" in the top menu. If you can't log in, tap \"Talk to a person\" and our team will help.",
+      "Listings are edited from your account, so there is no passcode to remember. Log in with your WhatsApp number and password, then open \"My account\" in the top menu. Forgot your password? On the log in page, tap \"Ask for a password reset link\". Our team will check it is you on WhatsApp and send you a link to choose a new one. Each WhatsApp number can only have one account, so if you try to join again with the same number you will be asked to log in instead.",
   },
   {
     keywords: ["approve", "approval", "review", "pending", "waiting", "not showing", "not showing up", "visible", "go live", "when will", "isn't showing", "isnt showing"],

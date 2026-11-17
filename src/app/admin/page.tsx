@@ -34,7 +34,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const { status } = await searchParams;
   const tab: Tab = (TABS as readonly string[]).includes(status ?? "") ? (status as Tab) : "PENDING";
 
-  const [auto, listings, counts, openSupport, pendingJoins] = await Promise.all([
+  const [auto, listings, counts, openSupport, pendingJoins, pendingResets] = await Promise.all([
     getAutoApprove(),
     db.listing.findMany({
       where: { status: tab },
@@ -45,6 +45,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     db.listing.groupBy({ by: ["status"], _count: { _all: true } }),
     db.supportRequest.count({ where: { status: "OPEN" } }),
     db.joinRequest.count({ where: { status: "PENDING" } }),
+    db.joinRequest.count({ where: { status: "APPROVED", resetRequestedAt: { not: null } } }),
   ]);
   const countOf = (s: Tab) => counts.find((c) => c.status === s)?._count._all ?? 0;
 
@@ -58,6 +59,9 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           </Link>
           <Link href="/admin/join" className="btn-ghost">
             Join requests{pendingJoins > 0 ? ` (${pendingJoins} new)` : ""}
+          </Link>
+          <Link href="/admin/resets" className="btn-ghost">
+            Password resets{pendingResets > 0 ? ` (${pendingResets} new)` : ""}
           </Link>
           <Link href="/admin/import" className="btn-ghost">
             Import a post

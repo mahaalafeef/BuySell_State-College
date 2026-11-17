@@ -19,14 +19,19 @@ const FAQS: Faq[] = [
       "Only approved members can post. To post, tap \"Post a listing\" at the top, choose an item or housing, fill in the details, add photos if you like, and pick a passcode. Your phone number stays private. It is only used to edit your listing later.",
   },
   {
-    keywords: ["edit", "change my", "modify", "update my", "delete", "remove my", "mark as sold", "sold", "relist", "my listing"],
+    keywords: ["rating", "ratings", "stars", "star rating", "rate a seller", "rate the seller", "leave a review", "write a review", "seller review", "reviews of sellers"],
     answer: () =>
-      "Go to \"My listings\" and enter the post number you were given after posting (like BSC-0042), plus your passcode OR the phone number you listed with. You can also enter just your phone number to see all your listings. Once you're in, you can edit, mark as sold, relist, or delete.",
+      "Approved members can rate sellers from 1 to 5 stars and leave a short comment. Open a listing, tap the seller's name or \"See reviews or leave one\", and fill in the form. You can update or delete your review later, and you can't review yourself. Sellers are shown by first name and last initial.",
+  },
+  {
+    keywords: ["edit", "change my", "modify", "update my", "delete", "remove my", "mark as sold", "mark as pending", "mark pending", "sale pending", "sold", "relist", "my listing", "my account"],
+    answer: () =>
+      "Open \"My account\" in the top menu. Every listing you post while signed in is saved there, and you can edit it, mark it as pending (a sale is in progress) or sold, relist it, or delete it. For a listing you posted before accounts existed, tap \"Add an older listing\", then enter its post number (like BSC-0042) plus your passcode OR the phone number you listed with, and it moves into your account.",
   },
   {
     keywords: ["forgot", "lost", "passcode", "password", "listing id", "can't edit", "cant edit", "locked", "locked out"],
     answer: () =>
-      "No problem. Use the phone number you entered when posting instead. On \"My listings\", leave the listing ID blank and enter your phone number to see all your listings. After 5 wrong tries a listing is locked for 15 minutes. If you're still stuck, tap \"Talk to a person\".",
+      "No problem. Use the phone number you entered when posting instead. On the older-listing page (My account, then \"Add an older listing\"), leave the listing ID blank and enter your phone number to see all your listings. After 5 wrong tries a listing is locked for 15 minutes. If you're still stuck, tap \"Talk to a person\".",
   },
   {
     keywords: ["approve", "approval", "review", "pending", "waiting", "not showing", "not showing up", "visible", "go live", "when will", "isn't showing", "isnt showing"],

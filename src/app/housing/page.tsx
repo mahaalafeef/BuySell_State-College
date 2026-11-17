@@ -21,7 +21,7 @@ export default async function HousingPage({
 
   const listings = await db.listing.findMany({
     where: {
-      status: "APPROVED",
+      status: { in: ["APPROVED", "SALE_PENDING"] },
       category: active ? active : { in: [...HOUSING_CATEGORIES] },
       ...(term
         ? {

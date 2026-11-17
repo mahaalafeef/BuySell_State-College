@@ -18,11 +18,12 @@ import { getAutoApprove } from "@/lib/settings";
 export const metadata: Metadata = { title: "Admin" };
 export const dynamic = "force-dynamic";
 
-const TABS = ["PENDING", "APPROVED", "REJECTED", "SOLD"] as const;
+const TABS = ["PENDING", "APPROVED", "SALE_PENDING", "REJECTED", "SOLD"] as const;
 type Tab = (typeof TABS)[number];
 const TAB_LABELS: Record<Tab, string> = {
   PENDING: "To review",
   APPROVED: "Live",
+  SALE_PENDING: "Pending sale",
   REJECTED: "Not approved",
   SOLD: "Sold",
 };

@@ -3,14 +3,14 @@ import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatListingId, formatPosted } from "@/lib/config";
 import { db } from "@/lib/db";
-import { canManage } from "@/lib/session";
+import { canManageListing } from "@/lib/memberAccess";
 
 export const dynamic = "force-dynamic";
 
 export default async function Done({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   const { id } = await searchParams;
   const listing = id ? await db.listing.findUnique({ where: { id } }) : null;
-  if (!listing || !(await canManage(listing))) notFound();
+  if (!listing || !(await canManageListing(listing))) notFound();
 
   return (
     <div className="mx-auto max-w-xl space-y-5">
@@ -29,12 +29,16 @@ export default async function Done({ searchParams }: { searchParams: Promise<{ i
         <p className="mt-1 rounded bg-paper p-2 font-mono text-lg">{formatListingId(listing.listingNumber)}</p>
         <p className="mt-1 text-sm text-muted">Posted {formatPosted(listing.createdAt, true)}</p>
         <p className="mt-2 text-sm text-muted">
-          Save this number. To edit later, go to My listings and enter it with your passcode or phone number.
+          This listing is saved in your account. Find it any time under My account, where you can edit it, mark it
+          pending or sold, or delete it.
         </p>
       </div>
 
       <div className="flex gap-3">
-        <Link href={`/manage/${listing.id}`} className="btn-primary">
+        <Link href="/account" className="btn-primary">
+          Go to my account
+        </Link>
+        <Link href={`/manage/${listing.id}`} className="btn-ghost">
           Edit listing
         </Link>
         <Link href="/" className="btn-ghost">

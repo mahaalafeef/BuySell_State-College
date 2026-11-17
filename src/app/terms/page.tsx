@@ -75,6 +75,22 @@ const sections: LegalSection[] = [
     ],
   },
   {
+    title: "Your account and your listings",
+    paragraphs: [
+      "Listings you post while signed in are saved to your member account. You can edit them, mark them as pending (a sale is in progress) or sold, relist them, or delete them. You are responsible for keeping the status of your listings accurate. Deleting a listing removes it permanently.",
+    ],
+  },
+  {
+    title: "Ratings and reviews",
+    paragraphs: ["Approved members can rate sellers and write reviews. By posting a review you agree that:"],
+    bullets: [
+      "It reflects your own honest experience, and you have no conflict of interest with the seller.",
+      "It does not include threats, harassment, hate, private information such as phone numbers or addresses, or anything illegal or untrue.",
+      "Your review is shown to other approved members under your first name and last initial.",
+      "We may remove any review or rating at any time. Reviews are opinions of members, not of the Site, and we do not verify that a sale took place.",
+    ],
+  },
+  {
     title: "The chat assistant",
     paragraphs: [
       "The Site may include an automated chat assistant. It can be wrong and gives general information about how the Site works. It is not legal, financial, housing, or safety advice. Please do not put sensitive personal information in the chat.",

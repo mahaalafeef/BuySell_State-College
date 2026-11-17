@@ -31,8 +31,8 @@ export async function Header() {
           <Link href="/housing" className="btn text-ink hover:bg-paper">
             Housing
           </Link>
-          <Link href="/manage" className="btn text-ink hover:bg-paper">
-            My listings
+          <Link href="/account" className="btn text-ink hover:bg-paper">
+            My account
           </Link>
           <Link href="/sell" className="btn-primary">
             Post a listing

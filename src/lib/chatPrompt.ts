@@ -12,7 +12,8 @@ How the site works:
       ? "right now new listings go live immediately."
       : "right now every new listing is reviewed by the team before it appears publicly. Editing a live listing may send it back for review."
   }
-- Editing later: go to "My listings", enter the post number (like BSC-0042, shown after posting) or the listing ID from the link they saved plus EITHER the passcode OR the phone number. Entering only the phone number shows all listings tied to it. After 5 wrong tries a listing is locked for 15 minutes. Once signed in, the seller can edit, mark as sold, relist, or delete.
+- Accounts: listings a member posts are saved in "My account" (top menu), where they can edit, mark as pending (a sale is in progress), mark as sold, relist, or delete them. Older listings posted before accounts can be added from "My account" > "Add an older listing" using the post number (like BSC-0042) plus EITHER the passcode OR the phone number. After 5 wrong tries a listing is locked for 15 minutes.
+- Ratings: approved members can rate sellers 1 to 5 stars with an optional comment from the seller's profile (open a listing and tap the seller's name). Members can't review themselves, and sellers appear by first name and last initial.
 - Contacting a seller: use the contact details on the listing page, or the "Message on WhatsApp" button if the seller added one.
 - The site does not process payments, shipping, or deposits, and does not verify who people are. Buyers and sellers deal directly with each other.
 

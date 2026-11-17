@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PhotoGallery } from "@/components/PhotoGallery";
+import { Stars } from "@/components/Stars";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatListingId, formatListingPrice, formatPosted } from "@/lib/config";
 import { db } from "@/lib/db";
-import { hasMemberAccess } from "@/lib/memberAccess";
-import { canManage, isAdmin } from "@/lib/session";
+import { canManageListing, hasMemberAccess } from "@/lib/memberAccess";
+import { displayName, getSellerRating, reviewCountText } from "@/lib/reviews";
+import { isAdmin } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +17,7 @@ type Params = { params: Promise<{ id: string }> };
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
   const l = await db.listing.findUnique({ where: { id }, select: { title: true, status: true } });
-  return { title: l && l.status === "APPROVED" ? l.title : "Listing" };
+  return { title: l && (l.status === "APPROVED" || l.status === "SALE_PENDING") ? l.title : "Listing" };
 }
 
 export default async function ListingPage({ params }: Params) {
@@ -23,11 +25,18 @@ export default async function ListingPage({ params }: Params) {
   const listing = await db.listing.findUnique({ where: { id } });
   if (!listing) notFound();
 
-  const owner = await canManage(listing);
+  const owner = await canManageListing(listing);
   const admin = await isAdmin();
   const isMember = await hasMemberAccess(); // approved member (checked live) or admin
-  const publicStatus = listing.status === "APPROVED" || listing.status === "SOLD";
+  const publicStatus = listing.status === "APPROVED" || listing.status === "SALE_PENDING" || listing.status === "SOLD";
   if (!publicStatus && !owner && !admin) notFound();
+
+  // Seller details and rating are for approved members only
+  const seller =
+    isMember && listing.ownerId
+      ? await db.joinRequest.findFirst({ where: { id: listing.ownerId, status: "APPROVED" }, select: { id: true, name: true } })
+      : null;
+  const rating = seller ? await getSellerRating(seller.id) : null;
 
   const photos = listing.images.length ? listing.images : listing.imageUrl ? [listing.imageUrl] : [];
 
@@ -72,12 +81,41 @@ export default async function ListingPage({ params }: Params) {
 
         <p className="max-w-prose whitespace-pre-wrap">{listing.description}</p>
 
+        {seller && rating && (
+          <div className="rounded-lg border border-line bg-white p-4 text-sm">
+            <p className="font-semibold">Seller</p>
+            <p className="mt-1 flex flex-wrap items-center gap-2">
+              <Link href={`/sellers/${seller.id}`} className="underline">
+                {displayName(seller.name)}
+              </Link>
+              {rating.count > 0 ? (
+                <>
+                  <Stars rating={rating.average} />
+                  <span>
+                    {rating.average.toFixed(1)} ({reviewCountText(rating.count)})
+                  </span>
+                </>
+              ) : (
+                <span className="text-muted">No reviews yet</span>
+              )}
+            </p>
+            <Link href={`/sellers/${seller.id}#reviews`} className="mt-2 inline-block underline">
+              See reviews or leave one
+            </Link>
+          </div>
+        )}
+
         {listing.status !== "SOLD" &&
           (isMember ? (
             <div className="rounded-lg border border-line bg-white p-4">
               <p className="font-semibold">Contact the seller</p>
               <p className="mt-1 break-words">{listing.contact}</p>
-              {listing.whatsapp && listing.status === "APPROVED" && (
+              {listing.status === "SALE_PENDING" && (
+                <p className="mt-2 rounded-md bg-blue-100 p-2 text-sm text-blue-900">
+                  The seller has a sale pending, so this may no longer be available.
+                </p>
+              )}
+              {listing.whatsapp && (listing.status === "APPROVED" || listing.status === "SALE_PENDING") && (
                 <a
                   href={`/contact/${listing.id}`}
                   target="_blank"

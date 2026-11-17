@@ -6,11 +6,10 @@ import { redirect } from "next/navigation";
 import { notifyAdminPending } from "@/lib/email";
 import { normalizeWhatsapp } from "@/lib/whatsapp";
 import { LOCK_MINUTES, MAX_FAILED_ATTEMPTS, parseListingId } from "@/lib/config";
-import { hasMemberAccess } from "@/lib/memberAccess";
+import { canManageListing, getActiveMember } from "@/lib/memberAccess";
 import { db } from "@/lib/db";
 import { hashPasscode, normalizePhone, safeEqual, verifyPasscode } from "@/lib/security";
 import {
-  canManage,
   clearAdminSession,
   clearUserSession,
   isAdmin,
@@ -47,6 +46,7 @@ function formValues(fd: FormData): Record<string, string> {
 function refresh() {
   revalidatePath("/");
   revalidatePath("/manage");
+  revalidatePath("/account");
   revalidatePath("/admin");
 }
 
@@ -57,8 +57,12 @@ function refresh() {
 /** What status a listing gets after being created, edited, or relisted. */
 async function statusAfterChange(current: ListingStatus | null): Promise<ListingStatus> {
   if (current === "SOLD") return "SOLD";
-  if (await getAutoApprove()) return "APPROVED";
-  if (current === "APPROVED" && process.env.REQUIRE_REAPPROVAL_ON_EDIT === "false") return "APPROVED";
+  // A listing the seller marked "pending" stays pending when it is edited, as long as it doesn't need re-approval
+  const keep: ListingStatus = current === "SALE_PENDING" ? "SALE_PENDING" : "APPROVED";
+  if (await getAutoApprove()) return keep;
+  if ((current === "APPROVED" || current === "SALE_PENDING") && process.env.REQUIRE_REAPPROVAL_ON_EDIT === "false") {
+    return keep;
+  }
   return "PENDING";
 }
 
@@ -70,8 +74,9 @@ export async function createListing(_prev: FormState, fd: FormData): Promise<For
   // Honeypot: real people never fill this hidden field
   if (String(fd.get("website") ?? "") !== "") redirect("/");
 
-  // Only approved members (checked live) can post
-  if (!(await hasMemberAccess())) redirect("/members");
+  // Only approved members (checked live) can post. The listing is saved to their account.
+  const me = await getActiveMember();
+  if (!me && !(await isAdmin())) redirect("/members");
 
   const values = formValues(fd);
   if (fd.get("terms") !== "on") {
@@ -99,6 +104,7 @@ export async function createListing(_prev: FormState, fd: FormData): Promise<For
       phone,
       passcodeHash: hashPasscode(d.passcode),
       status: await statusAfterChange(null),
+      ownerId: me?.id ?? null,
     },
   });
 
@@ -153,6 +159,9 @@ export async function verifyAccess(_prev: FormState, fd: FormData): Promise<Form
       await db.listing.update({ where: { id }, data: { failedAttempts: 0, lockedUntil: null } });
     }
     await updateUserSession({ addId: id });
+    // If they're signed in as a member, an older listing moves into their account
+    const me = await getActiveMember();
+    if (me && !listing.ownerId) await db.listing.update({ where: { id }, data: { ownerId: me.id } });
     redirect(`/manage/${id}`);
   }
 
@@ -165,13 +174,15 @@ export async function verifyAccess(_prev: FormState, fd: FormData): Promise<Form
   if (count === 0) return { error: "We couldn't find listings for that phone number.", values };
 
   await updateUserSession({ phone });
+  const me = await getActiveMember();
+  if (me) await db.listing.updateMany({ where: { phone, ownerId: null }, data: { ownerId: me.id } });
   redirect("/manage");
 }
 
 async function requireOwner(id: string) {
   const listing = await db.listing.findUnique({ where: { id } });
   if (!listing) redirect("/manage");
-  if (!(await canManage(listing))) redirect(`/manage?id=${id}`);
+  if (!(await canManageListing(listing))) redirect(`/manage?id=${id}`);
   return listing;
 }
 
@@ -213,22 +224,35 @@ export async function updateListing(id: string, _prev: FormState, fd: FormData):
   redirect(`/manage/${id}?saved=1`);
 }
 
-export async function setSold(id: string, sold: boolean) {
+/**
+ * The seller moves a listing between Available, Pending (a buyer is lined up) and Sold.
+ * Only listings that have already been approved can be switched, so this can't skip the admin's review.
+ * Relisting something that was sold follows the normal approval rules.
+ */
+export async function setListingStatus(id: string, next: "APPROVED" | "SALE_PENDING" | "SOLD") {
   const listing = await requireOwner(id);
-  await db.listing.update({
-    where: { id },
-    data: { status: sold ? "SOLD" : await statusAfterChange(listing.status === "SOLD" ? null : listing.status) },
-  });
+  const current = listing.status;
+  let status: ListingStatus | null = null;
+
+  if (current === "APPROVED" || current === "SALE_PENDING") {
+    if (next === "SOLD" || next === "APPROVED" || next === "SALE_PENDING") status = next;
+  } else if (current === "SOLD" && next === "APPROVED") {
+    status = await statusAfterChange(null);
+  }
+
+  if (status && status !== current) {
+    await db.listing.update({ where: { id }, data: { status } });
+    if (status === "PENDING") await notifyAdminPending({ ...listing, status }, "edited");
+  }
   refresh();
   revalidatePath(`/listings/${id}`);
-  redirect(`/manage/${id}`);
 }
 
 export async function deleteMyListing(id: string) {
   await requireOwner(id);
   await db.listing.delete({ where: { id } });
   refresh();
-  redirect("/manage");
+  redirect((await getActiveMember()) ? "/account" : "/manage");
 }
 
 export async function signOut() {

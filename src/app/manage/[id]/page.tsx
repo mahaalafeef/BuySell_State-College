@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { deleteMyListing, setSold, updateListing } from "@/app/actions";
+import { deleteMyListing, updateListing } from "@/app/actions";
+import { ConfirmButton } from "@/components/ConfirmButton";
 import { ListingForm } from "@/components/ListingForm";
+import { ListingStatusActions } from "@/components/ListingStatusActions";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatListingId, formatPosted } from "@/lib/config";
 import { db } from "@/lib/db";
-import { canManage } from "@/lib/session";
+import { canManageListing, getActiveMember } from "@/lib/memberAccess";
 
 export const metadata: Metadata = { title: "Edit listing" };
 export const dynamic = "force-dynamic";
@@ -23,7 +25,8 @@ export default async function EditListing({
 
   const listing = await db.listing.findUnique({ where: { id } });
   if (!listing) redirect("/manage");
-  if (!(await canManage(listing))) redirect(`/manage?id=${id}`);
+  if (!(await canManageListing(listing))) redirect(`/manage?id=${id}`);
+  const member = await getActiveMember();
 
   const initial = {
     title: listing.title,
@@ -66,12 +69,17 @@ export default async function EditListing({
         <Link href={`/listings/${listing.id}`} className="btn-ghost">
           View listing
         </Link>
-        <form action={setSold.bind(null, listing.id, listing.status !== "SOLD")}>
-          <button className="btn-ghost">{listing.status === "SOLD" ? "Relist" : "Mark as sold"}</button>
-        </form>
+        <ListingStatusActions id={listing.id} status={listing.status} />
         <form action={deleteMyListing.bind(null, listing.id)}>
-          <button className="btn-danger">Delete</button>
+          <ConfirmButton message="Delete this listing? This can't be undone." className="btn-danger">
+            Delete
+          </ConfirmButton>
         </form>
+        {member && (
+          <Link href="/account" className="btn-ghost">
+            Back to my account
+          </Link>
+        )}
       </div>
 
       <ListingForm

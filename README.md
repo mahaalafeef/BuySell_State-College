@@ -79,3 +79,10 @@ Seller contact details (the contact text and the WhatsApp button/redirect) are s
 - The product photo is found with a small image check (`src/lib/photoCrop.ts`) and cropped in the browser. The admin can adjust the crop with sliders before it is saved.
 - The text then goes through the same admin-only `parsePost` and `createImportedListing` actions as pasted posts. Screenshot drafts default to the review list (Pending) instead of publishing straight away.
 - Posting by regular users is unchanged: only approved members can post (checked live), and the admin approval mode still applies.
+
+## Accounts, status, and seller reviews
+
+- Every listing a signed-in member posts is saved to their account (`Listing.ownerId`). `/account` lists them with buttons to edit, mark as **Pending** (a sale is in progress) or **Sold**, relist, and delete (with a confirmation).
+- `PENDING` still means "awaiting admin approval" and is shown as "Awaiting approval". `SALE_PENDING` is the seller's own "Pending" status. Sellers can only switch listings that have already been approved, so the admin's review can't be skipped.
+- Older listings move into an account when the member opens them with the post number plus passcode or phone number (`/manage`).
+- Members can rate sellers 1 to 5 stars with an optional comment (`/sellers/[id]`, `src/app/review-actions.ts`). One review per member per seller, no self-reviews, members only. The admin can delete any review from the seller page.

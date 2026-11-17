@@ -8,8 +8,9 @@ datasource db {
 }
 
 enum ListingStatus {
-  PENDING
-  APPROVED
+  PENDING // waiting for the admin to approve it
+  APPROVED // available
+  SALE_PENDING // the seller has a buyer lined up (set by the seller)
   REJECTED
   SOLD
 }
@@ -36,9 +37,14 @@ model Listing {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
+  // The member whose account this listing belongs to (empty for older listings until the seller proves ownership)
+  ownerId         String?
+  owner           JoinRequest?  @relation("ListingOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+
   @@index([status, createdAt])
   @@index([phone])
   @@index([listingNumber])
+  @@index([ownerId])
 }
 
 // Simple key/value store for site settings (e.g. autoApprove)
@@ -88,5 +94,26 @@ model JoinRequest {
   createdAt   DateTime  @default(now())
   decidedAt   DateTime?
 
+  listings        Listing[] @relation("ListingOwner")
+  reviewsReceived Review[]  @relation("SellerReviews")
+  reviewsWritten  Review[]  @relation("ReviewAuthor")
+
   @@index([status, createdAt])
+}
+
+// A member's star rating (1 to 5) and optional comment about a seller. One per member per seller.
+model Review {
+  id         String   @id @default(cuid())
+  sellerId   String
+  reviewerId String
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  seller   JoinRequest @relation("SellerReviews", fields: [sellerId], references: [id], onDelete: Cascade)
+  reviewer JoinRequest @relation("ReviewAuthor", fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  @@unique([sellerId, reviewerId])
+  @@index([sellerId, createdAt])
 }

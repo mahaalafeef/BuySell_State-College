@@ -18,7 +18,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     select: { title: true, status: true, whatsapp: true },
   });
 
-  if (!listing || listing.status !== "APPROVED" || !listing.whatsapp) {
+  if (!listing || (listing.status !== "APPROVED" && listing.status !== "SALE_PENDING") || !listing.whatsapp) {
     return NextResponse.redirect(new URL(`/listings/${id}`, request.url));
   }
 

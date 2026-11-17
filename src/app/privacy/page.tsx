@@ -20,6 +20,7 @@ const sections: LegalSection[] = [
     title: "Information we collect",
     bullets: [
       "Request to join: your name, WhatsApp number or username, how you are connected (for example, student or resident), an optional note" + (JOIN_REQUIRES_PROOF ? ", and a photo of your proof of connection." : "."),
+      "Account activity: which listings belong to your account, their status, and the ratings and reviews you give or receive.",
       "Member account: a password (stored only as a one-way scrambled hash, never in readable form) and a personal sign-in link.",
       "Listings: the title, description, price, category, condition, location or neighborhood, photos, the contact details you choose to show, an optional WhatsApp number or username, and a private phone number and passcode used only to prove the listing is yours (the passcode is stored only as a hash, and the phone number as its last 10 digits).",
       "Messages to us: your name, how to reach you, and your message, plus the recent chat conversation if you use \"Talk to a person\".",
@@ -45,6 +46,7 @@ const sections: LegalSection[] = [
     bullets: [
       "Anyone (even without an account) may be able to see a listing's title, description, price, category, condition, location or neighborhood, and photos. Do not put your home address, phone number, or other private details in these fields or in your photos.",
       "Only approved members and the admin can see the contact details a seller chose to show, including the WhatsApp button.",
+      "Seller profiles, ratings, and reviews are visible only to approved members and the admin. Members appear by first name and last initial.",
       "Only the admin can see your join request, including your name and WhatsApp number" + (JOIN_REQUIRES_PROOF ? ", and proof photo." : "."),
       "Listing photos are stored with a public web address. Anyone who has the exact link to a photo can open it, even if they are not a member.",
       "Your private phone number and passcode are never shown to other users.",
@@ -95,6 +97,7 @@ const sections: LegalSection[] = [
       ...(JOIN_REQUIRES_PROOF ? ["Proof photos: deleted when your request is decided."] : []),
       "Join request and member records: kept while you are a member and for a reasonable time afterward, then deleted on request or when no longer needed.",
       "Listings: kept until you or we delete them.",
+      "Reviews: kept until the person who wrote it or the admin deletes it, or until the seller's or reviewer's membership record is deleted.",
       "Messages to us: kept as long as needed to help you and then deleted.",
       "Scrambled IP records for spam control: kept for about two days.",
     ],

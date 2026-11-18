@@ -4,6 +4,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { formatListingId, formatPosted } from "@/lib/config";
 import { db } from "@/lib/db";
 import { canManageListing } from "@/lib/memberAccess";
+import { ShareToWhatsApp } from "@/components/ShareToWhatsApp";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,14 @@ export default async function Done({ searchParams }: { searchParams: Promise<{ i
           pending or sold, or delete it.
         </p>
       </div>
+
+      {listing.status === "APPROVED" && (
+        <div className="rounded-lg border border-line bg-white p-4">
+          <p className="font-semibold">Tell your WhatsApp group</p>
+          <p className="mt-1 text-sm text-muted">Opens WhatsApp so you can pick the group and send it.</p>
+          <ShareToWhatsApp listing={listing} className="btn-primary mt-3" />
+        </div>
+      )}
 
       <div className="flex gap-3">
         <Link href="/account" className="btn-primary">

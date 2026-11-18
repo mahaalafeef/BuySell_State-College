@@ -1,4 +1,4 @@
-import { whatsappShareUrl, type Shareable } from "@/lib/share";
+import { whatsappShareUrl, type Shareable } from "@/lib/whatsappShare";
 
 export function ShareToWhatsApp({
   listing,

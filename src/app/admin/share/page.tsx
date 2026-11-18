@@ -6,7 +6,7 @@ import { ShareToWhatsApp } from "@/components/ShareToWhatsApp";
 import { formatListingPrice } from "@/lib/config";
 import { db } from "@/lib/db";
 import { isAdmin } from "@/lib/session";
-import { shareText } from "@/lib/share";
+import { shareText } from "@/lib/whatsappShare";
 
 export const metadata: Metadata = { title: "Share to WhatsApp" };
 export const dynamic = "force-dynamic";

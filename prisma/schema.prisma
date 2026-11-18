@@ -120,3 +120,22 @@ model Review {
   @@unique([sellerId, reviewerId])
   @@index([sellerId, createdAt])
 }
+
+// Daily visitor counts for the admin (no cookies, no IP addresses stored)
+model DailyStat {
+  day            String @id // "2026-11-18"
+  visitors       Int    @default(0)
+  memberVisitors Int    @default(0)
+  views          Int    @default(0)
+}
+
+// Anonymous visitor codes, used only to count each visitor once a day (old ones are deleted)
+model VisitorDay {
+  id     String  @id @default(cuid())
+  day    String
+  hash   String
+  member Boolean @default(false)
+
+  @@unique([day, hash])
+  @@index([day])
+}

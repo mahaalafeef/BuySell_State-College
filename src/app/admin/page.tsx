@@ -67,6 +67,9 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           <Link href="/admin/import" className="btn-ghost">
             Import a post
           </Link>
+          <Link href="/admin/stats" className="btn-ghost">
+            Visitors and members
+          </Link>
           <Link href="/admin/support" className="btn-ghost">
             Customer messages{openSupport > 0 ? ` (${openSupport} new)` : ""}
           </Link>

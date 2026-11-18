@@ -5,6 +5,7 @@ import "./globals.css";
 import { ChatWidget } from "@/components/ChatWidget";
 import { Header } from "@/components/Header";
 import { SITE_NAME, SITE_TITLE } from "@/lib/config";
+import { VisitTracker } from "@/components/VisitTracker";
 
 const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-display" });
 const body = Source_Sans_3({ subsets: ["latin"], variable: "--font-body" });
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </footer>
         <ChatWidget />
+        <VisitTracker />
       </body>
     </html>
   );

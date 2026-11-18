@@ -9,6 +9,11 @@ export const NOT_SURE =
 
 const FAQS: Faq[] = [
   {
+    keywords: ["share my listing", "share a listing", "share to the group", "share to a group", "post to the group", "send to the group", "share on whatsapp", "post my listing in the group"],
+    answer: () =>
+      "Once your listing is live, tap \"Share to a WhatsApp group\" on the page you see after posting, or \"Share on WhatsApp\" on your listing or in My account. WhatsApp opens with the title, price and link ready. Choose the group and press send. Your contact details are never included in the message. Members of the group can open the link to see photos, and approved members can see how to contact you.",
+  },
+  {
     keywords: ["join", "whatsapp group", "invite", "member", "membership", "join the group"],
     answer: () =>
       "To join our WhatsApp group, open the Join page (add /join to the end of this site's address). Send a request with your name and WhatsApp number, and tell us how you are connected to Penn State or State College. We review each one and message you on WhatsApp with the invite.",

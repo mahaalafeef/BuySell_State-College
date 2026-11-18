@@ -3,12 +3,14 @@
 import { randomBytes } from "node:crypto";
 import type { ListingStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { notifyAdminPending } from "@/lib/email";
 import { normalizeWhatsapp } from "@/lib/whatsapp";
 import { LOCK_MINUTES, MAX_FAILED_ATTEMPTS, parseListingId } from "@/lib/config";
 import { canManageListing, getActiveMember } from "@/lib/memberAccess";
 import { db } from "@/lib/db";
+import { checkLimit, ipHash, recordEvent } from "@/lib/ratelimit";
 import { hashPasscode, normalizePhone, safeEqual, verifyPasscode } from "@/lib/security";
 import {
   clearAdminSession,
@@ -266,6 +268,12 @@ async function requireAdmin() {
 export async function adminLogin(_prev: FormState, fd: FormData): Promise<FormState> {
   const expected = process.env.ADMIN_PASSWORD;
   if (!expected) return { error: "ADMIN_PASSWORD isn't set on the server yet." };
+
+  // Slow down password guessing: a handful of tries per hour from one place
+  const hash = ipHash(await headers());
+  if (await checkLimit("admin", hash, 10)) return { error: "Too many attempts. Please wait an hour and try again." };
+  await recordEvent("admin", hash);
+
   if (!safeEqual(String(fd.get("password") ?? ""), expected)) return { error: "Wrong password." };
   await setAdminSession();
   redirect("/admin");

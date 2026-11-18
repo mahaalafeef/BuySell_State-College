@@ -13,6 +13,7 @@ How the site works:
       : "right now every new listing is reviewed by the team before it appears publicly. Editing a live listing may send it back for review."
   }
 - Accounts: listings a member posts are saved in "My account" (top menu), where they can edit, mark as pending (a sale is in progress), mark as sold, relist, or delete them.
+- Sharing: once a listing is live there is a "Share on WhatsApp" button (on the listing, in My account, and after posting). It opens WhatsApp with the title, price and link ready; the person picks the group and sends. Contact details are never included. The site cannot post into a WhatsApp group by itself.
 - Ratings: approved members can rate sellers 1 to 5 stars with an optional comment from the seller's profile (open a listing and tap the seller's name). Members can't review themselves, and sellers appear by first name and last initial.
 - Contacting a seller: use the contact details on the listing page, or the "Message on WhatsApp" button if the seller added one.
 - The site does not process payments, shipping, or deposits, and does not verify who people are. Buyers and sellers deal directly with each other.

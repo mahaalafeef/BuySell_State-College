@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PhotoGallery } from "@/components/PhotoGallery";
+import { ShareButton } from "@/components/ShareButton";
 import { Stars } from "@/components/Stars";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatListingId, formatListingPrice, formatPosted } from "@/lib/config";
@@ -16,8 +17,29 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
-  const l = await db.listing.findUnique({ where: { id }, select: { title: true, status: true } });
-  return { title: l && (l.status === "APPROVED" || l.status === "SALE_PENDING") ? l.title : "Listing" };
+  const l = await db.listing.findUnique({
+    where: { id },
+    select: {
+      title: true,
+      status: true,
+      description: true,
+      priceCents: true,
+      category: true,
+      location: true,
+      images: true,
+      imageUrl: true,
+    },
+  });
+  if (!l || (l.status !== "APPROVED" && l.status !== "SALE_PENDING")) return { title: "Listing" };
+
+  // This is what WhatsApp shows when the link is shared: the photo, the title, and the price and area
+  const image = l.images[0] ?? l.imageUrl;
+  const summary = `${formatListingPrice(l.priceCents, l.category)} · ${l.location}. ${l.description.slice(0, 140)}`;
+  return {
+    title: l.title,
+    description: summary,
+    openGraph: { title: l.title, description: summary, type: "website", ...(image ? { images: [{ url: image }] } : {}) },
+  };
 }
 
 export default async function ListingPage({ params }: Params) {
@@ -144,6 +166,8 @@ export default async function ListingPage({ params }: Params) {
               </div>
             </div>
           ))}
+
+        {(listing.status === "APPROVED" || listing.status === "SALE_PENDING") && <ShareButton listing={listing} />}
 
         {owner && (
           <Link href={`/manage/${listing.id}`} className="btn-ghost">

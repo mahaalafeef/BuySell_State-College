@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { codeMatches, MEMBER_COOKIE, MEMBER_DAYS, memberToken } from "@/lib/members";
+import { codeMatches } from "@/lib/members";
 
 export const dynamic = "force-dynamic";
 
-// Opens the site for an approved member who uses their personal link.
+// The personal link shows an applicant where their request stands, and lets an approved member choose a password.
+// Once a password exists the link no longer signs anyone in: they log in with their number and password.
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const id = url.searchParams.get("m") ?? "";
@@ -25,13 +26,5 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL(`/members/setup?m=${encodeURIComponent(id)}&c=${encodeURIComponent(code)}`, request.url));
   }
 
-  const res = NextResponse.redirect(new URL("/", request.url));
-  res.cookies.set(MEMBER_COOKIE, memberToken(id), {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: MEMBER_DAYS * 86400,
-  });
-  return res;
+  return NextResponse.redirect(new URL("/login?link=1", request.url));
 }

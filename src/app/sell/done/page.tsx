@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/StatusBadge";
+import { ShareButton } from "@/components/ShareButton";
 import { formatListingId, formatPosted } from "@/lib/config";
 import { db } from "@/lib/db";
 import { canManageListing } from "@/lib/memberAccess";
-import { ShareToWhatsApp } from "@/components/ShareToWhatsApp";
 
 export const dynamic = "force-dynamic";
 
@@ -35,12 +35,18 @@ export default async function Done({ searchParams }: { searchParams: Promise<{ i
         </p>
       </div>
 
-      {listing.status === "APPROVED" && (
+      {listing.status === "APPROVED" ? (
         <div className="rounded-lg border border-line bg-white p-4">
-          <p className="font-semibold">Tell your WhatsApp group</p>
-          <p className="mt-1 text-sm text-muted">Opens WhatsApp so you can pick the group and send it.</p>
-          <ShareToWhatsApp listing={listing} className="btn-primary mt-3" />
+          <p className="font-semibold">Tell the WhatsApp group</p>
+          <p className="mt-1 text-sm text-muted">
+            Your listing is live. Tap the button, choose the group, and send. Your contact details are not included.
+          </p>
+          <ShareButton listing={listing} label="Share to a WhatsApp group" className="btn-primary mt-3" />
         </div>
+      ) : (
+        <p className="text-sm text-muted">
+          Once your listing is approved, you can share it to the WhatsApp group from My account.
+        </p>
       )}
 
       <div className="flex gap-3">

@@ -14,7 +14,7 @@ export default async function SetupPage({ searchParams }: { searchParams: Promis
 
   const row = await db.joinRequest.findUnique({ where: { id: m }, select: { status: true, passwordHash: true, name: true } });
   if (row?.status !== "APPROVED") redirect("/members?invalid=1");
-  if (row.passwordHash) redirect(`/enter?m=${encodeURIComponent(m)}&c=${encodeURIComponent(c)}`); // already set: just sign in
+  if (row.passwordHash) redirect("/login?link=1"); // a password is already set: log in with it
 
   return (
     <div className="mx-auto max-w-md space-y-6">

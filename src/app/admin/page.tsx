@@ -13,6 +13,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { formatListingId, formatPosted, formatPrice } from "@/lib/config";
 import { db } from "@/lib/db";
 import { isAdmin } from "@/lib/session";
+import { ShareButton } from "@/components/ShareButton";
 import { getAutoApprove } from "@/lib/settings";
 
 export const metadata: Metadata = { title: "Admin" };
@@ -65,9 +66,6 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           </Link>
           <Link href="/admin/import" className="btn-ghost">
             Import a post
-          </Link>
-          <Link href="/admin/share" className="btn-ghost">
-            Share to WhatsApp
           </Link>
           <Link href="/admin/support" className="btn-ghost">
             Customer messages{openSupport > 0 ? ` (${openSupport} new)` : ""}
@@ -145,6 +143,9 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
               {l.rejectionReason && <p className="mt-1 text-sm text-danger">Reason given: {l.rejectionReason}</p>}
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
+                {(l.status === "APPROVED" || l.status === "SALE_PENDING") && (
+                  <ShareButton listing={l} label="Share to WhatsApp group" className="btn-primary" />
+                )}
                 {l.status !== "APPROVED" && (
                   <form action={approveListing.bind(null, l.id)}>
                     <button className="btn-primary">Approve</button>

@@ -1,30 +1,17 @@
-import { formatListingPrice, SITE_NAME } from "./config";
-import { maskContacts } from "./mask";
-import { siteUrl } from "./members";
+import { SITE_NAME, formatListingPrice } from "@/lib/config";
+import { siteUrl } from "@/lib/members";
 
-export type Shareable = {
-  id: string;
-  title: string;
-  priceCents: number;
-  category: string;
-  location: string;
-  description: string;
-};
+type Shareable = { id: string; title: string; priceCents: number; category: string; location: string };
 
-/** The message that appears in WhatsApp, ready to send. Contact details are never included. */
-export function shareText(l: Shareable): string {
-  const clean = maskContacts(l.description).replace(/\s+/g, " ").trim();
-  const lines = [
-    `🆕 *${maskContacts(l.title)}*`,
-    `💲 ${formatListingPrice(l.priceCents, l.category)}`,
-    l.location ? `📍 ${l.location}` : null,
-    clean ? `\n${clean.slice(0, 140)}${clean.length > 140 ? "…" : ""}` : null,
-    `\nSee it on ${SITE_NAME}: ${siteUrl()}/share/${l.id}`,
-  ];
-  return lines.filter((x): x is string => x !== null).join("\n");
+/**
+ * The message people send to a WhatsApp group. It holds only what is already public (title, price, area, link),
+ * never the seller's contact details, which stay for approved members on the site.
+ */
+export function listingShareText(l: Shareable): string {
+  return `${l.title}\n${formatListingPrice(l.priceCents, l.category)} · ${l.location}\nPhotos and details on ${SITE_NAME}: ${siteUrl()}/listings/${l.id}`;
 }
 
-/** Opens WhatsApp with the message typed. The person picks the group and taps send. */
-export function whatsappShareUrl(l: Shareable): string {
-  return `https://wa.me/?text=${encodeURIComponent(shareText(l))}`;
+/** Opens WhatsApp with the message ready. The person then picks the group and presses send. Free, no account needed. */
+export function whatsappShareHref(text: string): string {
+  return `https://wa.me/?text=${encodeURIComponent(text)}`;
 }

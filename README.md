@@ -100,3 +100,20 @@ Seller contact details (the contact text and the WhatsApp button/redirect) are s
 - Joining with a number that already has an approved account does not create anything. The form tells the person to log in and offers "Forgot your password?". A number with a request still being reviewed is told to wait, and banned numbers get the usual quiet "received" answer. `approveJoin` also refuses to approve a second request for a number that already has an account.
 - "Forgot your password?" (on `/login` and after a duplicate join) only sets `JoinRequest.resetRequestedAt` and emails the admin. Nothing is reset automatically, so nobody can take over an account just by knowing a number.
 - `/admin/resets` lists the requests in order: check with the person on WhatsApp, press Reset password, then send the reset link. Resetting clears the request. The reset link works because `/enter` lets a member with no password choose one.
+
+## Security notes
+
+- Passwords and passcodes are stored only as salted scrypt hashes. Sign-in cookies are signed, `httpOnly`, `sameSite=lax`, and `secure` in production.
+- Every page sends basic security headers (`next.config.mjs`): no framing, no content sniffing, HTTPS only, and a limited referrer.
+- Logins, joins, password resets, chat, support messages, and the **admin login** are rate limited per visitor (`lib/ratelimit.ts`).
+- Membership is checked live in the database for contact details, posting, uploads, seller profiles, and the account page, so removing or banning someone takes effect immediately.
+- A member's personal link (`/enter`) only shows an applicant their request status or lets an approved member choose a first password. Once a password is set the link no longer signs anyone in.
+- Use a long, random `ADMIN_PASSWORD` and `SESSION_SECRET`. Changing `SESSION_SECRET` signs everyone out and invalidates every personal link.
+
+## Sharing listings to a WhatsApp group (free)
+
+WhatsApp does not let a website post into an ordinary group automatically for free (the official Groups API is limited to verified business accounts, small groups it creates itself, and paid messages; unofficial tools break WhatsApp's rules and can get the number banned). Instead:
+
+- **Share buttons** (`components/ShareButton.tsx`, `lib/share.ts`) open WhatsApp with the title, price, area, and link ready (`https://wa.me/?text=...`). The person picks the group and presses send. They appear on live listings, after posting, in My account, and for the admin on each live listing in `/admin`.
+- The message contains only public details. Contact details stay members-only.
+- **Link previews:** `generateMetadata` on `/listings/[id]` adds Open Graph tags, so pasting the link into WhatsApp shows the photo, title, and price.

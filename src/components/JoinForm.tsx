@@ -61,7 +61,8 @@ function Sent({ path }: { path: string }) {
       <p className="text-lg font-semibold text-ok">Thanks! Your request was sent.</p>
       <p>
         <strong>Save your personal link.</strong> Use it to check your request. Once you&rsquo;re approved, the same link
-        lets you choose your password and log in. Please don&rsquo;t share it.
+        lets you choose your password. After that, you log in with your WhatsApp number and password. Please
+        don&rsquo;t share it.
       </p>
       <p className="break-all rounded-md bg-white p-3 text-sm">{link}</p>
       <div className="flex flex-wrap gap-2">

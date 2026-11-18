@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { deleteMyListing } from "@/app/actions";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import { ListingStatusActions } from "@/components/ListingStatusActions";
+import { ShareButton } from "@/components/ShareButton";
 import { Stars } from "@/components/Stars";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatListingId, formatPosted, formatPrice } from "@/lib/config";
@@ -93,6 +94,7 @@ export default async function AccountPage() {
                 )}
 
                 <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {(l.status === "APPROVED" || l.status === "SALE_PENDING") && <ShareButton listing={l} />}
                   <ListingStatusActions id={l.id} status={l.status} />
                   <Link href={`/manage/${l.id}`} className="btn-ghost">
                     Edit

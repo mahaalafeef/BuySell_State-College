@@ -4,6 +4,8 @@ import { Bricolage_Grotesque, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 import { ChatWidget } from "@/components/ChatWidget";
 import { Header } from "@/components/Header";
+import { MessagesWidget } from "@/components/MessagesWidget";
+import { getActiveMember } from "@/lib/memberAccess";
 import { SITE_NAME, SITE_TITLE } from "@/lib/config";
 import { VisitTracker } from "@/components/VisitTracker";
 
@@ -17,7 +19,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#2B5D8C" };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const member = await getActiveMember(); // the messages pop-up is only for signed-in members
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body className="flex min-h-screen flex-col">
@@ -37,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </footer>
         <ChatWidget />
+        {member && <MessagesWidget />}
         <VisitTracker />
       </body>
     </html>

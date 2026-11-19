@@ -136,3 +136,7 @@ Anyone can create an account at `/signup` with a name, email and password and is
 - Members are told on every message screen, and in the Privacy Policy, that the site team can read messages. Keep that notice if you keep the feature.
 - Limit: 30 messages per member per hour (`MESSAGES_PER_HOUR` in `src/lib/messages.ts`).
 - Tables: `Conversation` and `Message` in `prisma/schema.prisma`.
+
+### Chat pop-up
+
+Signed-in members get a "Messages" bubble (bottom left) on every page, so they can chat while browsing. It lives in `src/components/MessagesWidget.tsx`, is mounted in `src/app/layout.tsx`, and reads from `/api/messages`. The "Message the seller" button on a listing and the "Messages" link in the header open it. The full pages at `/messages` still work.

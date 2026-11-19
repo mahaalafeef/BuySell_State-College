@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { memberLogout } from "@/app/member-actions";
+import { OpenChatButton } from "@/components/OpenChatButton";
 import { db } from "@/lib/db";
 import { LOGO_SRC, SHOW_SITE_NAME_WITH_LOGO, SITE_NAME } from "@/lib/config";
 import { getMemberId } from "@/lib/members";
@@ -36,9 +37,7 @@ export async function Header() {
             Housing
           </Link>
           {memberId && (
-            <Link href="/messages" className="btn text-ink hover:bg-paper">
-              Messages{unread > 0 ? ` (${unread})` : ""}
-            </Link>
+            <OpenChatButton className="btn text-ink hover:bg-paper">Messages{unread > 0 ? ` (${unread})` : ""}</OpenChatButton>
           )}
           <Link href="/account" className="btn text-ink hover:bg-paper">
             My account

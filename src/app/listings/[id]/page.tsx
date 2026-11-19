@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { NewMessageForm } from "@/components/MessageForm";
+import { OpenChatButton } from "@/components/OpenChatButton";
 import { PhotoGallery } from "@/components/PhotoGallery";
 import { ShareButton } from "@/components/ShareButton";
 import { Stars } from "@/components/Stars";
@@ -141,14 +141,18 @@ export default async function ListingPage({ params }: Params) {
         {canMessage && (
           <div className="rounded-lg border border-line bg-white p-4">
             <p className="font-semibold">Message the seller</p>
+            <p className="mt-1 text-sm text-muted">A chat window opens, so you can keep browsing while you talk.</p>
             {existingChat ? (
-              <Link href={`/messages/${existingChat.id}`} className="btn-primary mt-3">
+              <OpenChatButton detail={{ conversationId: existingChat.id }} className="btn-primary mt-3">
                 Open your conversation
-              </Link>
+              </OpenChatButton>
             ) : (
-              <div className="mt-2">
-                <NewMessageForm listingId={listing.id} />
-              </div>
+              <OpenChatButton
+                detail={{ newChat: { listingId: listing.id, listingTitle: listing.title, sellerName: displayName(seller?.name ?? "the seller") } }}
+                className="btn-primary mt-3"
+              >
+                Send message
+              </OpenChatButton>
             )}
             <p className="mt-2 text-xs text-muted">{MESSAGE_NOTICE}</p>
           </div>

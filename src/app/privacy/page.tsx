@@ -20,6 +20,7 @@ const sections: LegalSection[] = [
     title: "Information we collect",
     bullets: [
       "Request to join: your name, WhatsApp number or username, how you are connected (for example, student or resident), an optional note" + (JOIN_REQUIRES_PROOF ? ", and a photo of your proof of connection." : "."),
+      "Private messages: the messages you send to other members through the Site, and who they were sent to and when.",
       "Account activity: which listings belong to your account, their status, and the ratings and reviews you give or receive.",
       "Member account: a password (stored only as a one-way scrambled hash, never in readable form) and a personal sign-in link.",
       "Listings: the title, description, price, category, condition, location or neighborhood, photos, the contact details you choose to show, an optional WhatsApp number or username. Older listings may also have a private phone number and passcode that were used to prove ownership (the passcode is stored only as a hash, and the phone number as its last 10 digits).",
@@ -47,6 +48,7 @@ const sections: LegalSection[] = [
       "Anyone (even without an account) may be able to see a listing's title, description, price, category, condition, location or neighborhood, and photos. Do not put your home address, phone number, or other private details in these fields or in your photos.",
       "Only approved members and the admin can see the contact details a seller chose to show, including the WhatsApp button.",
       "Seller profiles, ratings, and reviews are visible only to approved members and the admin. Members appear by first name and last initial.",
+      "Messages between members are private from other members, but the site team (the admin) can read them to prevent scams, fraud, and abuse, and to resolve disputes. We do not read them for any other purpose.",
       "Only the admin can see your join request, including your name and WhatsApp number" + (JOIN_REQUIRES_PROOF ? ", and proof photo." : "."),
       "Listing photos are stored with a public web address. Anyone who has the exact link to a photo can open it, even if they are not a member.",
       "Your private phone number and passcode are never shown to other users.",

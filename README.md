@@ -128,3 +128,11 @@ Anyone can create an account at `/signup` with a name, email and password and is
 - Optional: set `SIGNUP_ALLOWED_EMAIL_DOMAINS="psu.edu"` to only allow certain email domains.
 - Forgotten passwords: the member asks on `/login`, the admin gets it in `/admin/resets`, checks it is them, and sends the reset link by email or WhatsApp.
 - The old "Request to join" flow at `/join` still works if you ever want manual approval again.
+
+## Buyer and seller messages (admin can read them)
+
+- Members message a seller from the listing page (only listings that belong to a member account). Conversations live at `/messages` and `/messages/[id]`.
+- You can read every conversation, read-only, at `/admin/messages` (search by name, listing, or words in a message).
+- Members are told on every message screen, and in the Privacy Policy, that the site team can read messages. Keep that notice if you keep the feature.
+- Limit: 30 messages per member per hour (`MESSAGES_PER_HOUR` in `src/lib/messages.ts`).
+- Tables: `Conversation` and `Message` in `prisma/schema.prisma`.

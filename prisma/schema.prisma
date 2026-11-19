@@ -40,6 +40,7 @@ model Listing {
   // The member whose account this listing belongs to (empty for older listings until the seller proves ownership)
   ownerId         String?
   owner           JoinRequest?  @relation("ListingOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  conversations   Conversation[] @relation("ListingConversations")
 
   @@index([status, createdAt])
   @@index([phone])
@@ -102,6 +103,10 @@ model JoinRequest {
   reviewsReceived Review[]  @relation("SellerReviews")
   reviewsWritten  Review[]  @relation("ReviewAuthor")
 
+  conversationsAsBuyer  Conversation[] @relation("ConversationBuyer")
+  conversationsAsSeller Conversation[] @relation("ConversationSeller")
+  messagesSent          Message[]      @relation("MessageSender")
+
   @@index([status, createdAt])
 }
 
@@ -139,4 +144,38 @@ model VisitorDay {
 
   @@unique([day, hash])
   @@index([day])
+}
+
+// A private conversation between one buyer and one seller about one listing. The admin can read every conversation.
+model Conversation {
+  id           String      @id @default(cuid())
+  listingId    String?
+  listing      Listing?    @relation("ListingConversations", fields: [listingId], references: [id], onDelete: SetNull)
+  listingTitle String // saved so the admin still sees what it was about if the listing is later deleted
+  buyerId      String
+  sellerId     String
+  buyer        JoinRequest @relation("ConversationBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  seller       JoinRequest @relation("ConversationSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+  buyerUnread  Boolean     @default(false) // the seller wrote something the buyer hasn't opened yet
+  sellerUnread Boolean     @default(false) // the buyer wrote something the seller hasn't opened yet
+  lastMessageAt DateTime   @default(now())
+  createdAt    DateTime    @default(now())
+  messages     Message[]
+
+  @@unique([listingId, buyerId])
+  @@index([buyerId, lastMessageAt])
+  @@index([sellerId, lastMessageAt])
+  @@index([lastMessageAt])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         JoinRequest  @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  body           String
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
 }

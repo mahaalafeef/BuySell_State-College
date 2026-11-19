@@ -9,9 +9,13 @@ import { isAdmin } from "@/lib/session";
 export async function Header() {
   // If someone's access was removed, sign them out the next time a page loads
   const memberId = await getMemberId();
+  let unread = 0;
   if (memberId && !(await isAdmin())) {
     const row = await db.joinRequest.findUnique({ where: { id: memberId }, select: { status: true } });
     if (row?.status !== "APPROVED") redirect("/members/revoked");
+    unread = await db.conversation.count({
+      where: { OR: [{ buyerId: memberId, buyerUnread: true }, { sellerId: memberId, sellerUnread: true }] },
+    });
   }
 
   return (
@@ -31,6 +35,11 @@ export async function Header() {
           <Link href="/housing" className="btn text-ink hover:bg-paper">
             Housing
           </Link>
+          {memberId && (
+            <Link href="/messages" className="btn text-ink hover:bg-paper">
+              Messages{unread > 0 ? ` (${unread})` : ""}
+            </Link>
+          )}
           <Link href="/account" className="btn text-ink hover:bg-paper">
             My account
           </Link>

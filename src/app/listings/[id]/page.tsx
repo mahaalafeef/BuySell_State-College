@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { NewMessageForm } from "@/components/MessageForm";
 import { PhotoGallery } from "@/components/PhotoGallery";
 import { ShareButton } from "@/components/ShareButton";
 import { Stars } from "@/components/Stars";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatListingId, formatListingPrice, formatPosted } from "@/lib/config";
 import { db } from "@/lib/db";
-import { canManageListing, hasMemberAccess } from "@/lib/memberAccess";
+import { canManageListing, getActiveMember, hasMemberAccess } from "@/lib/memberAccess";
+import { MESSAGE_NOTICE } from "@/lib/messages";
 import { displayName, getSellerRating, reviewCountText } from "@/lib/reviews";
 import { isAdmin } from "@/lib/session";
 
@@ -59,6 +61,15 @@ export default async function ListingPage({ params }: Params) {
       ? await db.joinRequest.findFirst({ where: { id: listing.ownerId, status: "APPROVED" }, select: { id: true, name: true } })
       : null;
   const rating = seller ? await getSellerRating(seller.id) : null;
+
+  // In-site messaging: a signed-in member can message the seller of a listing that belongs to a member account
+  const me = await getActiveMember();
+  const canMessage =
+    !!me && !!seller && seller.id !== me.id && (listing.status === "APPROVED" || listing.status === "SALE_PENDING");
+  const existingChat =
+    me && canMessage
+      ? await db.conversation.findFirst({ where: { listingId: listing.id, buyerId: me.id }, select: { id: true } })
+      : null;
 
   const photos = listing.images.length ? listing.images : listing.imageUrl ? [listing.imageUrl] : [];
 
@@ -124,6 +135,22 @@ export default async function ListingPage({ params }: Params) {
             <Link href={`/sellers/${seller.id}#reviews`} className="mt-2 inline-block underline">
               See reviews or leave one
             </Link>
+          </div>
+        )}
+
+        {canMessage && (
+          <div className="rounded-lg border border-line bg-white p-4">
+            <p className="font-semibold">Message the seller</p>
+            {existingChat ? (
+              <Link href={`/messages/${existingChat.id}`} className="btn-primary mt-3">
+                Open your conversation
+              </Link>
+            ) : (
+              <div className="mt-2">
+                <NewMessageForm listingId={listing.id} />
+              </div>
+            )}
+            <p className="mt-2 text-xs text-muted">{MESSAGE_NOTICE}</p>
           </div>
         )}
 

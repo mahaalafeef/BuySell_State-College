@@ -140,3 +140,11 @@ Anyone can create an account at `/signup` with a name, email and password and is
 ### Chat pop-up
 
 Signed-in members get a "Messages" bubble (bottom left) on every page, so they can chat while browsing. It lives in `src/components/MessagesWidget.tsx`, is mounted in `src/app/layout.tsx`, and reads from `/api/messages`. The "Message the seller" button on a listing and the "Messages" link in the header open it. The full pages at `/messages` still work.
+
+## Quick post with AI
+
+At `/sell/ai` a member adds up to 5 photos (or takes one with the phone camera) and writes a few words. The photos upload to the site's photo storage, then `src/app/ai-listing-actions.ts` sends them and the note to Anthropic, which returns a draft (title, polished description, category, condition, location and a list of things to check). The draft opens in the normal listing form so the member can change anything and tick the Terms box before posting. Nothing is posted automatically, and new listings still follow your normal approval setting.
+
+- Needs `ANTHROPIC_API_KEY` in Vercel. Without it, the page still works but fills the form from the member's words with simple rules (no AI, no photo reading).
+- Limits: 10 drafts per member per hour, and `AI_LISTING_DAILY_LIMIT` (default 200) for the whole site per day.
+- Only photos uploaded to the site's own storage are ever sent to the AI.

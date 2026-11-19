@@ -73,7 +73,7 @@ const sections: LegalSection[] = [
     bullets: [
       "Hosting and database providers (for example Vercel and Neon), which store the Site's data and files.",
       "An email service (for example Resend), used to notify the admin of new requests, listings, and messages.",
-      "An AI provider (for example Anthropic), which receives the questions you type to the chat assistant so it can answer. Do not enter sensitive personal information into the chat.",
+      "An AI provider (for example Anthropic), which receives the questions you type to the chat assistant so it can answer, and the photos and short description you submit to the Quick post tool so it can draft a listing for you to review. Do not enter sensitive personal information, and do not photograph people, IDs, or documents.",
       "WhatsApp (Meta), which handles messages when you or the admin use WhatsApp. WhatsApp's own privacy policy applies to those messages.",
     ],
   },

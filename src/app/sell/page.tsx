@@ -17,6 +17,16 @@ export default async function SellPage({ searchParams }: { searchParams: Promise
     return (
       <div className="mx-auto max-w-2xl space-y-6">
         <h1 className="text-3xl font-bold">What are you posting?</h1>
+        <Link
+          href="/sell/ai"
+          className="block rounded-lg border-2 border-brand bg-white p-6 transition-shadow hover:shadow-md"
+        >
+          <span className="font-display text-xl font-bold">Quick post with AI</span>
+          <span className="mt-1 block text-muted">
+            Take or upload photos, write a few words, and AI drafts the listing for you. You check it before it goes live.
+          </span>
+        </Link>
+        <p className="text-sm text-muted">Or fill in the form yourself:</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <Link
             href="/sell?type=item"
@@ -41,9 +51,14 @@ export default async function SellPage({ searchParams }: { searchParams: Promise
     <div className="mx-auto max-w-2xl">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold">{type === "housing" ? "List housing or a sublease" : "Sell an item"}</h1>
-        <Link href="/sell" className="text-sm underline">
-          Change type
-        </Link>
+        <div className="flex gap-4 text-sm">
+          <Link href="/sell/ai" className="underline">
+            Quick post with AI
+          </Link>
+          <Link href="/sell" className="underline">
+            Change type
+          </Link>
+        </div>
       </div>
       <ListingForm mode="create" kind={type} action={createListing} />
     </div>

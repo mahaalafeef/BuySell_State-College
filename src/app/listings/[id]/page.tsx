@@ -138,26 +138,6 @@ export default async function ListingPage({ params }: Params) {
           </div>
         )}
 
-        {canMessage && (
-          <div className="rounded-lg border border-line bg-white p-4">
-            <p className="font-semibold">Message the seller</p>
-            <p className="mt-1 text-sm text-muted">A chat window opens, so you can keep browsing while you talk.</p>
-            {existingChat ? (
-              <OpenChatButton detail={{ conversationId: existingChat.id }} className="btn-primary mt-3">
-                Open your conversation
-              </OpenChatButton>
-            ) : (
-              <OpenChatButton
-                detail={{ newChat: { listingId: listing.id, listingTitle: listing.title, sellerName: displayName(seller?.name ?? "the seller") } }}
-                className="btn-primary mt-3"
-              >
-                Send message
-              </OpenChatButton>
-            )}
-            <p className="mt-2 text-xs text-muted">{MESSAGE_NOTICE}</p>
-          </div>
-        )}
-
         {listing.status !== "SOLD" &&
           (isMember ? (
             <div className="rounded-lg border border-line bg-white p-4">
@@ -168,16 +148,36 @@ export default async function ListingPage({ params }: Params) {
                   The seller has a sale pending, so this may no longer be available.
                 </p>
               )}
-              {listing.whatsapp && (listing.status === "APPROVED" || listing.status === "SALE_PENDING") && (
-                <a
-                  href={`/contact/${listing.id}`}
-                  target="_blank"
-                  rel="nofollow noopener noreferrer"
-                  className="btn-primary mt-3"
-                >
-                  Message on WhatsApp
-                </a>
+              {(canMessage || (listing.whatsapp && (listing.status === "APPROVED" || listing.status === "SALE_PENDING"))) && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {canMessage &&
+                    (existingChat ? (
+                      <OpenChatButton detail={{ conversationId: existingChat.id }} className="btn-primary">
+                        Open your chat
+                      </OpenChatButton>
+                    ) : (
+                      <OpenChatButton
+                        detail={{
+                          newChat: { listingId: listing.id, listingTitle: listing.title, sellerName: displayName(seller?.name ?? "the seller") },
+                        }}
+                        className="btn-primary"
+                      >
+                        Message seller
+                      </OpenChatButton>
+                    ))}
+                  {listing.whatsapp && (listing.status === "APPROVED" || listing.status === "SALE_PENDING") && (
+                    <a
+                      href={`/contact/${listing.id}`}
+                      target="_blank"
+                      rel="nofollow noopener noreferrer"
+                      className={canMessage ? "btn-ghost" : "btn-primary"}
+                    >
+                      Message on WhatsApp
+                    </a>
+                  )}
+                </div>
               )}
+              {canMessage && <p className="mt-2 text-xs text-muted">{MESSAGE_NOTICE}</p>}
               <p className="mt-3 text-xs text-muted">
                 This site only connects people and is not part of any sale or rental. Meet in a public place, inspect
                 before you pay, and beware of scams. See the{" "}

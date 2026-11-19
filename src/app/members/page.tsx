@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/PageHero";
 import { SITE_NAME } from "@/lib/config";
+import { db } from "@/lib/db";
 import { getRequestId, memberPath } from "@/lib/members";
 
 export const metadata: Metadata = { title: "Members only" };
@@ -9,6 +10,8 @@ export const metadata: Metadata = { title: "Members only" };
 export default async function MembersPage({ searchParams }: { searchParams: Promise<{ invalid?: string }> }) {
   const { invalid } = await searchParams;
   const requestId = await getRequestId();
+  // If the link was emailed, it must stay in their inbox, so it is not offered from this device
+  const request = requestId ? await db.joinRequest.findUnique({ where: { id: requestId }, select: { email: true } }) : null;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -29,7 +32,15 @@ export default async function MembersPage({ searchParams }: { searchParams: Prom
         </p>
       )}
 
-      {requestId && (
+      {requestId && request?.email && (
+        <section className="space-y-1 rounded-xl border border-line bg-white p-5">
+          <p className="font-semibold">You sent a request from this device.</p>
+          <p className="text-sm text-muted">
+            We emailed you a link. Open it from your Gmail to check on your request.
+          </p>
+        </section>
+      )}
+      {requestId && request && !request.email && (
         <section className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-white p-5">
           <p className="font-semibold">You sent a request from this device.</p>
           <Link href={memberPath(requestId)} className="btn-primary">
@@ -41,12 +52,12 @@ export default async function MembersPage({ searchParams }: { searchParams: Prom
       <section className="space-y-3 rounded-xl border border-line bg-white p-5">
         <h2 className="text-xl font-bold">How it works</h2>
         <ol className="list-decimal space-y-2 pl-5">
-          <li>Tap &ldquo;Request to join&rdquo; and send your name and WhatsApp number, and tell us how you are connected.</li>
-          <li>We review it and message you on WhatsApp.</li>
-          <li>You get a personal link. Open it once to choose a password.</li>
-          <li>After that, log in any time with your WhatsApp number and password.</li>
+          <li>Tap &ldquo;Request to join&rdquo; and send your name, Gmail address and WhatsApp number, and tell us how you are connected.</li>
+          <li>We review it and email you.</li>
+          <li>You get a link in your Gmail. Open it once to choose a password.</li>
+          <li>After that, log in any time with your Gmail address and password.</li>
         </ol>
-        <p className="text-sm text-muted">Already approved? Use &ldquo;Member log in&rdquo;. First time? Open the personal link we sent you on WhatsApp.</p>
+        <p className="text-sm text-muted">Already approved? Use &ldquo;Member log in&rdquo;. First time? Open the link we emailed you.</p>
       </section>
     </div>
   );

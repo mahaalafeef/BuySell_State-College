@@ -40,6 +40,7 @@ model Listing {
   // The member whose account this listing belongs to (empty for older listings until the seller proves ownership)
   ownerId         String?
   owner           JoinRequest?  @relation("ListingOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  conversations   Conversation[]
 
   @@index([status, createdAt])
   @@index([phone])
@@ -94,6 +95,8 @@ model JoinRequest {
   createdAt   DateTime  @default(now())
   decidedAt   DateTime?
 
+  // The Gmail address they signed up with (in one standard form). Their password link and message alerts go here.
+  email            String?
   // When the member last asked for a password reset (cleared once the admin deals with it)
   resetRequestedAt DateTime?
 
@@ -101,7 +104,12 @@ model JoinRequest {
   reviewsReceived Review[]  @relation("SellerReviews")
   reviewsWritten  Review[]  @relation("ReviewAuthor")
 
+  conversationsAsBuyer  Conversation[] @relation("ConversationBuyer")
+  conversationsAsSeller Conversation[] @relation("ConversationSeller")
+  messagesSent          Message[]      @relation("MessageSender")
+
   @@index([status, createdAt])
+  @@index([email])
 }
 
 // A member's star rating (1 to 5) and optional comment about a seller. One per member per seller.
@@ -121,21 +129,44 @@ model Review {
   @@index([sellerId, createdAt])
 }
 
-// Daily visitor counts for the admin (no cookies, no IP addresses stored)
-model DailyStat {
-  day            String @id // "2026-11-18"
-  visitors       Int    @default(0)
-  memberVisitors Int    @default(0)
-  views          Int    @default(0)
+// A private thread between a buyer and a seller about one listing. The site admin can read every thread.
+model Conversation {
+  id            String    @id @default(cuid())
+  listingId     String?
+  listingTitle  String // kept so the thread still makes sense if the listing is deleted
+  buyerId       String
+  sellerId      String
+  createdAt     DateTime  @default(now())
+  lastMessageAt DateTime  @default(now())
+  buyerUnread   Int       @default(0)
+  sellerUnread  Int       @default(0)
+  // Set when a worrying word was used or a member reported it. The admin clears it after looking.
+  flaggedAt     DateTime?
+  reportedAt    DateTime?
+  reportReason  String?
+
+  listing  Listing?    @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  buyer    JoinRequest @relation("ConversationBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  seller   JoinRequest @relation("ConversationSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@unique([listingId, buyerId])
+  @@index([buyerId, lastMessageAt])
+  @@index([sellerId, lastMessageAt])
+  @@index([flaggedAt])
+  @@index([lastMessageAt])
 }
 
-// Anonymous visitor codes, used only to count each visitor once a day (old ones are deleted)
-model VisitorDay {
-  id     String  @id @default(cuid())
-  day    String
-  hash   String
-  member Boolean @default(false)
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  senderId       String
+  body           String
+  hidden         Boolean  @default(false) // hidden by the admin
+  createdAt      DateTime @default(now())
 
-  @@unique([day, hash])
-  @@index([day])
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       JoinRequest  @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
 }

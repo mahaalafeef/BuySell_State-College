@@ -56,6 +56,11 @@ export function formatListingPrice(cents: number, category: string) {
   return (HOUSING_CATEGORIES as readonly string[]).includes(category) ? `${base}/month` : base;
 }
 
+// Messaging between members. Set this to false to hide sellers' own contact details so that messages on the site
+// (which the admin can read) are the only way to reach them. Listings with no member account behind them, and
+// the admin, still see the contact details.
+export const SHOW_SELLER_CONTACT = true;
+
 // Legal pages (/terms and /privacy). Set NEXT_PUBLIC_CONTACT_EMAIL in your environment to show an email address.
 export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "";
 export const LEGAL_UPDATED = "November 15, 2026";

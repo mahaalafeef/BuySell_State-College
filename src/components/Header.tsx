@@ -9,9 +9,17 @@ import { isAdmin } from "@/lib/session";
 export async function Header() {
   // If someone's access was removed, sign them out the next time a page loads
   const memberId = await getMemberId();
+  let unread = 0;
   if (memberId && !(await isAdmin())) {
     const row = await db.joinRequest.findUnique({ where: { id: memberId }, select: { status: true } });
     if (row?.status !== "APPROVED") redirect("/members/revoked");
+
+    // New messages waiting for this member (as a buyer or as a seller)
+    const [asBuyer, asSeller] = await Promise.all([
+      db.conversation.aggregate({ where: { buyerId: memberId }, _sum: { buyerUnread: true } }),
+      db.conversation.aggregate({ where: { sellerId: memberId }, _sum: { sellerUnread: true } }),
+    ]);
+    unread = (asBuyer._sum.buyerUnread ?? 0) + (asSeller._sum.sellerUnread ?? 0);
   }
 
   return (
@@ -31,6 +39,14 @@ export async function Header() {
           <Link href="/housing" className="btn text-ink hover:bg-paper">
             Housing
           </Link>
+          {memberId && (
+            <Link href="/messages" className="btn text-ink hover:bg-paper">
+              Messages
+              {unread > 0 && (
+                <span className="ml-1.5 rounded-full bg-danger px-2 py-0.5 text-xs font-bold text-white">{unread}</span>
+              )}
+            </Link>
+          )}
           <Link href="/account" className="btn text-ink hover:bg-paper">
             My account
           </Link>

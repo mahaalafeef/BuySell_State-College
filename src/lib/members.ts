@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { readToken, signToken } from "./security";
 
@@ -27,6 +27,29 @@ export function siteUrl(): string {
   if (process.env.SITE_URL) return process.env.SITE_URL.replace(/\/$/, "");
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
   return "http://localhost:3000";
+}
+
+/** A short fingerprint of the current password, so a reset link stops working once the password has changed. */
+function passwordFingerprint(passwordHash: string | null): string {
+  return createHash("sha256").update(passwordHash ?? "none").digest("base64url").slice(0, 16);
+}
+
+/** A one-hour link that lets a member choose a new password. It can only be used once. */
+export function resetLink(id: string, passwordHash: string | null): string {
+  const t = signToken({ r: id, f: passwordFingerprint(passwordHash) }, 3600);
+  return `${siteUrl()}/members/reset?t=${encodeURIComponent(t)}`;
+}
+
+/** Reads a reset link's token (signature and expiry are checked). Compare the fingerprint with fingerprintMatches. */
+export function readResetToken(token: string | undefined): { id: string; fingerprint: string } | null {
+  const d = readToken<{ r?: unknown; f?: unknown }>(token);
+  return d && typeof d.r === "string" && typeof d.f === "string" ? { id: d.r, fingerprint: d.f } : null;
+}
+
+export function fingerprintMatches(passwordHash: string | null, fingerprint: string): boolean {
+  const a = Buffer.from(passwordFingerprint(passwordHash));
+  const b = Buffer.from(fingerprint);
+  return a.length === b.length && timingSafeEqual(a, b);
 }
 
 /** The personal link the admin sends to an approved member. */

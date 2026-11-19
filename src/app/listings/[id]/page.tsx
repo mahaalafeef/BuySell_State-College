@@ -5,9 +5,10 @@ import { PhotoGallery } from "@/components/PhotoGallery";
 import { ShareButton } from "@/components/ShareButton";
 import { Stars } from "@/components/Stars";
 import { StatusBadge } from "@/components/StatusBadge";
-import { formatListingId, formatListingPrice, formatPosted } from "@/lib/config";
+import { SHOW_SELLER_CONTACT, formatListingId, formatListingPrice, formatPosted } from "@/lib/config";
 import { db } from "@/lib/db";
-import { canManageListing, hasMemberAccess } from "@/lib/memberAccess";
+import { startConversation } from "@/app/message-actions";
+import { canManageListing, getActiveMember, hasMemberAccess } from "@/lib/memberAccess";
 import { displayName, getSellerRating, reviewCountText } from "@/lib/reviews";
 import { isAdmin } from "@/lib/session";
 
@@ -59,6 +60,12 @@ export default async function ListingPage({ params }: Params) {
       ? await db.joinRequest.findFirst({ where: { id: listing.ownerId, status: "APPROVED" }, select: { id: true, name: true } })
       : null;
   const rating = seller ? await getSellerRating(seller.id) : null;
+
+  // Messaging: members can write to the seller on the site (the admin can read these messages)
+  const me = await getActiveMember();
+  const isOpen = listing.status === "APPROVED" || listing.status === "SALE_PENDING";
+  const canMessage = isOpen && !!me && !!listing.ownerId && me.id !== listing.ownerId;
+  const showContact = SHOW_SELLER_CONTACT || !listing.ownerId || admin || owner;
 
   const photos = listing.images.length ? listing.images : listing.imageUrl ? [listing.imageUrl] : [];
 
@@ -131,13 +138,21 @@ export default async function ListingPage({ params }: Params) {
           (isMember ? (
             <div className="rounded-lg border border-line bg-white p-4">
               <p className="font-semibold">Contact the seller</p>
-              <p className="mt-1 break-words">{listing.contact}</p>
+              {canMessage && (
+                <form action={startConversation.bind(null, listing.id)} className="mt-2">
+                  <button className="btn-primary">Message the seller</button>
+                  <p className="mt-1 text-xs text-muted">
+                    Messages on this site can be read by the site admin to keep members safe.
+                  </p>
+                </form>
+              )}
+              {showContact && <p className="mt-2 break-words">{listing.contact}</p>}
               {listing.status === "SALE_PENDING" && (
                 <p className="mt-2 rounded-md bg-blue-100 p-2 text-sm text-blue-900">
                   The seller has a sale pending, so this may no longer be available.
                 </p>
               )}
-              {listing.whatsapp && (listing.status === "APPROVED" || listing.status === "SALE_PENDING") && (
+              {showContact && listing.whatsapp && (listing.status === "APPROVED" || listing.status === "SALE_PENDING") && (
                 <a
                   href={`/contact/${listing.id}`}
                   target="_blank"

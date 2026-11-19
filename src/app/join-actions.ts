@@ -4,9 +4,10 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { notifyAdminJoin } from "@/lib/email";
+import { emailApproved, emailJoinReceived, notifyAdminJoin } from "@/lib/email";
+import { canonicalGmail } from "@/lib/emailAddress";
 import { BAN_REASON, JOIN_REQUIRES_PROOF, JOIN_ROLES, MAX_PROOF_BYTES } from "@/lib/join";
-import { memberPath, setRequestCookie } from "@/lib/members";
+import { memberLink, memberPath, setRequestCookie } from "@/lib/members";
 import { checkLimit, ipHash, recordEvent } from "@/lib/ratelimit";
 import { isAdmin } from "@/lib/session";
 import { normalizeWhatsapp } from "@/lib/whatsapp";
@@ -20,6 +21,9 @@ export type JoinState =
       // This WhatsApp number already has an account, or a request that is still being reviewed
       exists?: "account" | "pending";
       number?: string;
+      // The personal link was emailed to this Gmail address (so it is not shown on screen)
+      emailed?: boolean;
+      email?: string;
     }
   | undefined;
 
@@ -29,6 +33,7 @@ export async function submitJoin(fd: FormData): Promise<JoinState> {
 
   const name = String(fd.get("name") ?? "").trim().slice(0, 100);
   const whatsappRaw = String(fd.get("whatsapp") ?? "").trim();
+  const emailRaw = String(fd.get("email") ?? "").trim();
   const role = String(fd.get("role") ?? "");
   const note = String(fd.get("note") ?? "").trim().slice(0, 500);
   const consent = fd.get("consent") === "on";
@@ -38,6 +43,8 @@ export async function submitJoin(fd: FormData): Promise<JoinState> {
   if (name.length < 2) fieldErrors.name = "Please enter your name.";
   const whatsapp = normalizeWhatsapp(whatsappRaw);
   if (!whatsapp) fieldErrors.whatsapp = "Enter your WhatsApp number with country code (+1 555 123 4567), or your WhatsApp username.";
+  const email = canonicalGmail(emailRaw);
+  if (!email) fieldErrors.email = "Enter your Gmail address (like name@gmail.com).";
   if (!(JOIN_ROLES as readonly string[]).includes(role)) fieldErrors.role = "Choose one.";
   if (!consent) fieldErrors.consent = "Please tick the box to continue.";
 
@@ -54,7 +61,7 @@ export async function submitJoin(fd: FormData): Promise<JoinState> {
     bytes = new Uint8Array(await proof.arrayBuffer());
   }
 
-  if (Object.keys(fieldErrors).length > 0 || !whatsapp || (JOIN_REQUIRES_PROOF && !bytes)) {
+  if (Object.keys(fieldErrors).length > 0 || !whatsapp || !email || (JOIN_REQUIRES_PROOF && !bytes)) {
     return { error: "Please fix the highlighted fields.", fieldErrors };
   }
 
@@ -64,24 +71,28 @@ export async function submitJoin(fd: FormData): Promise<JoinState> {
   }
   await recordEvent("join", hash);
 
-  // One account per WhatsApp number. Someone who already has an account is sent to log in or reset their password,
-  // and someone who was banned gets the same quiet "received" answer as before.
+  // One account per Gmail address and per WhatsApp number. Someone who already has an account is sent to log in or
+  // reset their password, and someone who was banned gets the same quiet "received" answer as before.
   const same = await db.joinRequest.findMany({
-    where: { whatsapp, status: { in: ["APPROVED", "PENDING", "BANNED"] } },
+    where: { status: { in: ["APPROVED", "PENDING", "BANNED"] }, OR: [{ whatsapp }, { email }] },
     select: { status: true },
   });
   if (same.some((r) => r.status === "BANNED")) return { ok: true };
-  if (same.some((r) => r.status === "APPROVED")) return { exists: "account", number: whatsapp };
-  if (same.some((r) => r.status === "PENDING")) return { exists: "pending", number: whatsapp };
+  if (same.some((r) => r.status === "APPROVED")) return { exists: "account", number: whatsapp, email };
+  if (same.some((r) => r.status === "PENDING")) return { exists: "pending", number: whatsapp, email };
 
   const created = await db.joinRequest.create({
-    data: { name, whatsapp, role, note: note || null, proof: bytes, hasProof: bytes !== null },
+    data: { name, whatsapp, email, role, note: note || null, proof: bytes, hasProof: bytes !== null },
   });
   await setRequestCookie(created.id); // lets them check on it later from this browser
   await notifyAdminJoin({ name, role });
   revalidatePath("/admin/join");
   revalidatePath("/admin");
-  return { ok: true, path: memberPath(created.id) };
+
+  // The personal link goes only to their Gmail inbox. That is how we know the address really is theirs.
+  // If email isn't working, fall back to showing the link on screen so nobody is stuck.
+  const emailed = await emailJoinReceived({ to: email, name, link: memberLink(created.id) });
+  return emailed ? { ok: true, emailed: true, email } : { ok: true, path: memberPath(created.id) };
 }
 
 /* ---------------- Admin ---------------- */
@@ -121,10 +132,14 @@ export async function approveJoin(id: string) {
     refresh();
     return;
   }
-  await db.joinRequest.update({
+  const approved = await db.joinRequest.update({
     where: { id },
     data: { status: "APPROVED", proof: null, hasProof: false, decidedAt: new Date(), decidedNote: null },
+    select: { id: true, name: true, email: true },
   });
+  // Email them the link to choose a password. (If there is no email on file, or email isn't working, the admin
+  // can still send the link on WhatsApp from the Approved list.)
+  if (approved.email) await emailApproved({ to: approved.email, name: approved.name, link: memberLink(approved.id) });
   refresh();
 }
 

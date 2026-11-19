@@ -9,6 +9,11 @@ export const NOT_SURE =
 
 const FAQS: Faq[] = [
   {
+    keywords: ["message the seller", "message a seller", "message a buyer", "contact the seller", "how do i contact", "inbox", "messages", "chat with the seller", "private message"],
+    answer: () =>
+      "Open a listing and tap \"Message the seller\". Your conversations are in \"Messages\" in the top menu, with a red number when something new is waiting, and you also get an email. Messages on this site can be read by the site admin to keep everyone safe, so never send passwords, codes or payment details, and never pay before you have seen the item. If something seems wrong, open the conversation and tap \"Report this conversation\".",
+  },
+  {
     keywords: ["share my listing", "share a listing", "share to the group", "share to a group", "post to the group", "send to the group", "share on whatsapp", "post my listing in the group"],
     answer: () =>
       "Once your listing is live, tap \"Share to a WhatsApp group\" on the page you see after posting, or \"Share on WhatsApp\" on your listing or in My account. WhatsApp opens with the title, price and link ready. Choose the group and press send. Your contact details are never included in the message. Members of the group can open the link to see photos, and approved members can see how to contact you.",
@@ -16,7 +21,7 @@ const FAQS: Faq[] = [
   {
     keywords: ["join", "whatsapp group", "invite", "member", "membership", "join the group"],
     answer: () =>
-      "To join our WhatsApp group, open the Join page (add /join to the end of this site's address). Send a request with your name and WhatsApp number, and tell us how you are connected to Penn State or State College. We review each one and message you on WhatsApp with the invite.",
+      "To join our WhatsApp group, open the Join page (add /join to the end of this site's address). Send a request with your name, Gmail address and WhatsApp number, and tell us how you are connected to Penn State or State College. We review each one and email you a link to choose your password.",
   },
   {
     keywords: ["post", "sell", "list my", "list an", "list a", "create a listing", "add a listing", "new listing", "put up", "how do i list"],

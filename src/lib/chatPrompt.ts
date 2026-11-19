@@ -13,6 +13,8 @@ How the site works:
       : "right now every new listing is reviewed by the team before it appears publicly. Editing a live listing may send it back for review."
   }
 - Accounts: listings a member posts are saved in "My account" (top menu), where they can edit, mark as pending (a sale is in progress), mark as sold, relist, or delete them.
+- Sign-up: people join with their name, a Gmail address and a WhatsApp number. After the admin approves them, an email with a link to choose a password goes to that Gmail address. They log in with their Gmail address (or WhatsApp number) and password. Forgot password: "Forgot your password?" on the log in page emails a one-hour link.
+- Messaging: approved members can message sellers from the listing ("Message the seller"). Conversations are under "Messages" in the top menu. The site admin can read all messages for safety, and members are told this. Members can report a conversation from inside it.
 - Sharing: once a listing is live there is a "Share on WhatsApp" button (on the listing, in My account, and after posting). It opens WhatsApp with the title, price and link ready; the person picks the group and sends. Contact details are never included. The site cannot post into a WhatsApp group by itself.
 - Ratings: approved members can rate sellers 1 to 5 stars with an optional comment from the seller's profile (open a listing and tap the seller's name). Members can't review themselves, and sellers appear by first name and last initial.
 - Contacting a seller: use the contact details on the listing page, or the "Message on WhatsApp" button if the seller added one.

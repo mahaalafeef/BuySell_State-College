@@ -16,14 +16,14 @@ export function LoginForm() {
       )}
       <div>
         <label htmlFor="login-phone" className="mb-1 block font-semibold">
-          WhatsApp number
+          Gmail address or WhatsApp number
         </label>
         <input
           id="login-phone"
           name="phone"
           required
           autoComplete="username"
-          placeholder="The number you used to join"
+          placeholder="name@gmail.com"
           className="input"
         />
       </div>
@@ -37,7 +37,7 @@ export function LoginForm() {
         Log in
       </SubmitButton>
       <p className="text-sm text-muted">
-        First time? Open the personal link we sent you on WhatsApp to choose your password. Not a member yet?{" "}
+        First time? Open the link we emailed you to choose your password. Not a member yet?{" "}
         <Link href="/join" className="font-semibold text-brand underline">
           Request to join
         </Link>

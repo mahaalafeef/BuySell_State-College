@@ -17,13 +17,14 @@ export function ForgotPassword({ initialNumber }: { initialNumber?: string }) {
 
       {state?.ok ? (
         <p role="status" className="rounded-md bg-ok/10 p-3 text-ok">
-          Thanks! If that number has an account, our team has been told. They will message you on WhatsApp with a
-          link to choose a new password, so please keep an eye on your WhatsApp.
+          Thanks! If that Gmail address or number has an account, we have sent a link to the Gmail address on file
+          (check your inbox and spam folder). If we do not have a Gmail address for you, our team has been told and
+          will message you on WhatsApp.
         </p>
       ) : (
         <form action={action} className="space-y-3">
           <p className="text-sm text-muted">
-            Enter the WhatsApp number you joined with. We will check it is you on WhatsApp and send you a link.
+            Enter the Gmail address or WhatsApp number you joined with. We will send you a link to choose a new password.
           </p>
           {state?.error && (
             <p role="alert" className="rounded-md bg-danger/10 p-2.5 text-sm text-danger">
@@ -35,7 +36,7 @@ export function ForgotPassword({ initialNumber }: { initialNumber?: string }) {
           </div>
           <div>
             <label htmlFor="forgot-phone" className="mb-1 block font-semibold">
-              WhatsApp number
+              Gmail address or WhatsApp number
             </label>
             <input
               id="forgot-phone"

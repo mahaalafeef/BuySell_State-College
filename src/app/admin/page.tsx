@@ -35,7 +35,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const { status } = await searchParams;
   const tab: Tab = (TABS as readonly string[]).includes(status ?? "") ? (status as Tab) : "PENDING";
 
-  const [auto, listings, counts, openSupport, pendingJoins, pendingResets] = await Promise.all([
+  const [auto, listings, counts, openSupport, pendingJoins, pendingResets, flaggedChats] = await Promise.all([
     getAutoApprove(),
     db.listing.findMany({
       where: { status: tab },
@@ -47,6 +47,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     db.supportRequest.count({ where: { status: "OPEN" } }),
     db.joinRequest.count({ where: { status: "PENDING" } }),
     db.joinRequest.count({ where: { status: "APPROVED", resetRequestedAt: { not: null } } }),
+    db.conversation.count({ where: { flaggedAt: { not: null } } }),
   ]);
   const countOf = (s: Tab) => counts.find((c) => c.status === s)?._count._all ?? 0;
 
@@ -55,6 +56,9 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold">Admin</h1>
         <div className="flex gap-2">
+          <Link href="/admin/messages" className="btn-ghost">
+            Messages{flaggedChats > 0 ? ` (${flaggedChats} to check)` : ""}
+          </Link>
           <Link href="/admin/sellers" className="btn-ghost">
             Sellers
           </Link>
@@ -66,9 +70,6 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           </Link>
           <Link href="/admin/import" className="btn-ghost">
             Import a post
-          </Link>
-          <Link href="/admin/stats" className="btn-ghost">
-            Visitors and members
           </Link>
           <Link href="/admin/support" className="btn-ghost">
             Customer messages{openSupport > 0 ? ` (${openSupport} new)` : ""}

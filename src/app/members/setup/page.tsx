@@ -21,7 +21,7 @@ export default async function SetupPage({ searchParams }: { searchParams: Promis
       <div>
         <h1 className="text-3xl font-bold">Welcome, {row.name}!</h1>
         <p className="mt-2 text-muted">
-          Choose a password for {SITE_NAME}. Next time, log in with your WhatsApp number and this password.
+          Choose a password for {SITE_NAME}. Next time, log in with your Gmail address (or WhatsApp number) and this password.
         </p>
       </div>
       <SetupForm m={m} c={c} />

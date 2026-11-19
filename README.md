@@ -117,3 +117,18 @@ WhatsApp does not let a website post into an ordinary group automatically for fr
 - **Share buttons** (`components/ShareButton.tsx`, `lib/share.ts`) open WhatsApp with the title, price, area, and link ready (`https://wa.me/?text=...`). The person picks the group and presses send. They appear on live listings, after posting, in My account, and for the admin on each live listing in `/admin`.
 - The message contains only public details. Contact details stay members-only.
 - **Link previews:** `generateMetadata` on `/listings/[id]` adds Open Graph tags, so pasting the link into WhatsApp shows the photo, title, and price.
+
+## Gmail sign-up, emailed password links, and messaging
+
+**Email (free).** Set `GMAIL_USER` (a Gmail address, ideally a dedicated one for the site) and `GMAIL_APP_PASSWORD` (a 16-character "app password" from Google Account, Security, 2-Step Verification, App passwords) in Vercel. Mail is sent through Gmail with `nodemailer` (about 500 emails a day). Alternatively use Resend (`RESEND_API_KEY` and `EMAIL_FROM`, which needs a domain you own). Admin alerts go to `ADMIN_EMAIL`, or to `GMAIL_USER` if that is not set. If email is not set up or a send fails, the site falls back to the earlier behaviour (the link is shown on screen, and the admin sends it on WhatsApp).
+
+- New members must give a Gmail address. It is stored in one standard form (`lib/emailAddress.ts`: dots and `+tags` are ignored, `googlemail.com` becomes `gmail.com`), so one inbox can only have one account.
+- The personal link is emailed only to that address, which is what proves the address belongs to the applicant. It is not shown on screen when the email goes out.
+- On approval, `approveJoin` emails the link to choose a password. Members log in with their Gmail address or their WhatsApp number.
+- "Forgot your password?" emails a one-hour, one-time link (`lib/members.ts`: `resetLink`, `/members/reset`). Members with no Gmail on file (older members) still go through the admin's `/admin/resets` page.
+
+**Messaging.** `/messages` (inbox) and `/messages/[id]` (thread) for approved members; "Message the seller" on listings that belong to a member account. Messages are stored in `Conversation` and `Message`. The page refreshes itself every few seconds. A recipient gets an email alert for the first unread message in a burst.
+
+- The admin can read everything at `/admin/messages` (live), hide single messages, delete a conversation, or ban either person from the same page. A conversation is marked "Needs a look" when a member reports it or a message contains a scam-type word (`lib/messageRules.ts`). Nothing is blocked automatically.
+- Members are told on every messages page, on the listing, in the Terms, and in the Privacy Policy that the admin can read messages. Keep it that way: private messages should not be monitored without telling people.
+- `SHOW_SELLER_CONTACT` in `lib/config.ts` (default `true`) controls whether sellers' own contact details are shown next to the message button. Set it to `false` to make messages the only way to reach sellers.

@@ -53,6 +53,22 @@ function Field({ label, name, error, hint, children }: { label: string; name: st
   );
 }
 
+function Emailed({ email }: { email?: string }) {
+  return (
+    <div role="status" className="space-y-3 rounded-xl bg-ok/10 p-5">
+      <p className="text-lg font-semibold text-ok">Thanks! Your request was sent.</p>
+      <p>
+        We emailed a link to <strong>{email}</strong>. Please check your inbox, and your spam folder if you do not see
+        it. You can use that link to check on your request.
+      </p>
+      <p>
+        Once you are approved, we will email you again (or message you on WhatsApp). The same link lets you choose your
+        password. After that, you log in with your Gmail address and password.
+      </p>
+    </div>
+  );
+}
+
 function Sent({ path }: { path: string }) {
   const [copied, setCopied] = useState(false);
   const link = `${window.location.origin}${path}`;
@@ -129,6 +145,7 @@ export function JoinForm() {
   }
 
   if (state?.ok) {
+    if (state.emailed) return <Emailed email={state.email} />;
     return state.path ? (
       <Sent path={state.path} />
     ) : (
@@ -142,13 +159,16 @@ export function JoinForm() {
     return (
       <div className="space-y-5">
         <div role="status" className="space-y-3 rounded-xl border border-line bg-white p-5">
-          <p className="text-lg font-semibold">This WhatsApp number already has an account.</p>
-          <p>Each number can only have one account, so there is no need to join again. Please log in.</p>
+          <p className="text-lg font-semibold">This Gmail address or WhatsApp number already has an account.</p>
+          <p>
+            Each Gmail address and WhatsApp number can only have one account, so there is no need to join again. Please
+            log in.
+          </p>
           <Link href="/login" className="btn-primary">
             Log in
           </Link>
         </div>
-        <ForgotPassword initialNumber={state.number} />
+        <ForgotPassword initialNumber={state.email ?? state.number} />
       </div>
     );
   }
@@ -156,8 +176,8 @@ export function JoinForm() {
   if (state?.exists === "pending") {
     return (
       <p role="status" className="rounded-xl bg-amber-100 p-5 text-lg text-amber-900">
-        We already have a request from this WhatsApp number, and it is waiting for review. We will message you on
-        WhatsApp when it is decided, so there is no need to send another one.
+        We already have a request from this Gmail address or WhatsApp number, and it is waiting for review. We will
+        email you when it is decided, so there is no need to send another one.
       </p>
     );
   }
@@ -180,9 +200,26 @@ export function JoinForm() {
         label="Your WhatsApp number or username"
         name="whatsapp"
         error={fe.whatsapp}
-        hint="Include the country code, like +1 555 123 4567. We'll use it to send your invite."
+        hint="Include the country code, like +1 555 123 4567."
       >
         <input id="join-whatsapp" name="whatsapp" required autoComplete="tel" className="input" />
+      </Field>
+
+      <Field
+        label="Your Gmail address"
+        name="email"
+        error={fe.email}
+        hint="We email you a link to choose your password, so please use an address you can open. It must be a Gmail address."
+      >
+        <input
+          id="join-email"
+          name="email"
+          type="email"
+          required
+          autoComplete="email"
+          placeholder="name@gmail.com"
+          className="input"
+        />
       </Field>
 
       <Field label="Which describes you best?" name="role" error={fe.role}>

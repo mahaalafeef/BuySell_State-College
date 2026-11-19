@@ -91,6 +91,19 @@ const sections: LegalSection[] = [
     ],
   },
   {
+    title: "Messages between members",
+    paragraphs: [
+      "Approved members can send each other messages about listings on the Site. Messages on the Site are not private. The Site's administrator can read them to keep the community safe, to look into reports, and to enforce these Terms, and we may hide or delete messages or remove accounts. By using messaging you agree to this.",
+      "Never send passwords, verification codes, or payment details in a message, and never pay before you have seen an item. Messages that use words often found in scams may be flagged for the administrator to review. Messages must follow the same rules as listings and reviews: no threats, harassment, illegal offers, or spam.",
+    ],
+  },
+  {
+    title: "Your email address",
+    paragraphs: [
+      "We ask for a Gmail address when you join. We use it to send your password link, password resets, and notices about new messages, and you agree to receive those emails. We do not show your address to other members.",
+    ],
+  },
+  {
     title: "The chat assistant",
     paragraphs: [
       "The Site may include an automated chat assistant. It can be wrong and gives general information about how the Site works. It is not legal, financial, housing, or safety advice. Please do not put sensitive personal information in the chat.",

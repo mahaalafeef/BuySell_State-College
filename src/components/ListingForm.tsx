@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import type { FormState } from "@/app/actions";
 import { CONDITIONS, HOUSING_CATEGORIES, RENTAL_CONDITION, SALE_CATEGORIES } from "@/lib/config";
+import { draftItemListing } from "@/lib/ruleParse";
 import { PhotoUploader } from "./PhotoUploader";
 import { SubmitButton } from "./SubmitButton";
 
@@ -57,12 +58,70 @@ export function ListingForm({ mode, action, initial = {}, initialImages = [], ki
     "aria-describedby": err(name) ? `${name}-error` : undefined,
   });
 
+  const quickDraft = mode === "create" && !housing;
+  const [note, setNote] = useState("");
+  const [draftStatus, setDraftStatus] = useState("");
+  const photos = <PhotoUploader initial={initialImages} onBusyChange={setUploading} error={err("images")} />;
+
+  function fillDraft(event: React.MouseEvent<HTMLButtonElement>) {
+    const form = event.currentTarget.form;
+    if (!form) return;
+
+    const draft = draftItemListing(note);
+    let filled = false;
+    for (const [name, value] of Object.entries(draft)) {
+      const field = form.elements.namedItem(name);
+      if (
+        value &&
+        (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) &&
+        !field.value.trim()
+      ) {
+        field.value = value;
+        filled = true;
+      }
+    }
+    setDraftStatus(
+      filled ? "Draft filled in. Review the details and complete any blanks before posting." :
+        "No empty fields could be filled. Add more detail or edit the fields below.",
+    );
+  }
+
   return (
     <form action={formAction} className="space-y-5">
       {state?.error && (
         <p role="alert" className="rounded-md bg-danger/10 p-3 text-danger">
           {state.error}
         </p>
+      )}
+
+      {quickDraft && (
+        <section aria-label="Quick listing draft" className="space-y-4 rounded-lg border border-line bg-white p-4">
+          {photos}
+          <div>
+            <label htmlFor="listing-note" className="mb-1 block font-semibold">Describe your item</label>
+            <textarea
+              id="listing-note"
+              rows={3}
+              maxLength={4000}
+              value={note}
+              onChange={(event) => {
+                setNote(event.target.value);
+                setDraftStatus("");
+              }}
+              placeholder="Free hole punch tool. Never used. Ordered by mistake."
+              className="input"
+            />
+          </div>
+          <button
+            type="button"
+            disabled={!note.trim()}
+            onClick={fillDraft}
+            className="rounded-md border border-line px-4 py-2 font-semibold disabled:opacity-50"
+          >
+            Create listing draft
+          </button>
+          <p role="status" className="text-sm text-muted">{draftStatus}</p>
+        </section>
       )}
 
       <Field label="Title" name="title" error={err("title")}>
@@ -131,7 +190,7 @@ export function ListingForm({ mode, action, initial = {}, initialImages = [], ki
         <input id="location" name="location" required defaultValue={v.location} className="input" {...a11y("location")} />
       </Field>
 
-      <PhotoUploader initial={initialImages} onBusyChange={setUploading} error={err("images")} />
+      {!quickDraft && photos}
 
       <Field
         label="How buyers can reach you"

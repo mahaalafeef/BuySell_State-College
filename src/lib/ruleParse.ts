@@ -84,3 +84,56 @@ export function ruleParse(text: string): Draft {
     phone,
   };
 }
+
+// Used by the seller form. Suggestions are based on the note and can be edited.
+export function draftItemListing(note: string) {
+  const lines = note
+    .split(/\r?\n/)
+    .map((line) => line.trim().replace(/[\t ]+/g, " "))
+    .filter(Boolean);
+  const text = lines.join("\n");
+  const first = lines[0]?.split(/[.!?]\s+|\s+[-–—]\s+/)[0] ?? "";
+  const title = first
+    .replace(/^(?:selling|giving away|for sale\s*:?)\s+/i, "")
+    .replace(/\s+(?:for\s+)?\$\s*\d.*$/i, "")
+    .replace(/[.!?]+$/, "")
+    .trim()
+    .slice(0, 100);
+  const cleanTitle = title.replace(/^\p{L}/u, (letter) => letter.toUpperCase());
+
+  const amount = /(?:^|\n)price\s*:\s*\$?\s*(\d{1,7}(?:\.\d{1,2})?)(?![\d,]|\.\d)|(?:^|\s)asking\s+\$?\s*(\d{1,7}(?:\.\d{1,2})?)(?![\d,]|\.\d)/i.exec(text);
+  const mentionedAmounts = Array.from(
+    text.matchAll(/\$\s*(\d{1,3}(?:,\d{3})+|\d{1,7})(\.\d{1,2})?(?![\d,]|\.\d)/g),
+    ([, dollars, cents]) => dollars.replace(/,/g, "") + (cents ?? ""),
+  );
+  const free = /^(?:free(?:\s|[.!:]|$)|giving\s+(?:it\s+)?away\b)|(?:^|\n)price\s*:\s*free\b/i.test(text);
+  const uniqueAmounts = [...new Set(mentionedAmounts)];
+  const hasPriceContext = !/\b(?:originally|paid|retail|worth|cost me|costs? new)\b|\bwas\s+\$/i.test(text);
+  const tentativePrice = amount?.[1] ?? amount?.[2] ??
+    (free ? "0" : uniqueAmounts.length === 1 && hasPriceContext ? uniqueAmounts[0] : "");
+  const price = /^\d{1,7}(\.\d{1,2})?$/.test(tentativePrice) ? tentativePrice : "";
+
+  const category = /\b(?:hole[ -]punch|drill|toolbox)\b/i.test(cleanTitle)
+    ? "Home & garden"
+    : ITEM_CATEGORIES.find(([pattern]) => pattern.test(cleanTitle))?.[1] ?? "";
+  const condition =
+    /\b(?:for parts|broken|does(?:n't| not) work)\b/i.test(text) ? "For parts" :
+    /\b(?:like new|barely used)\b/i.test(text) ? "Like new" :
+    /\b(?:never used|unused|unopened|brand new|new in box)\b|(?:^|\n)condition\s*:\s*new\b/i.test(text) ? "New" :
+    /\bfair condition\b/i.test(text) ? "Fair" :
+    /\b(?:good condition|great condition|works great)\b/i.test(text) ? "Good" : "";
+
+  const description = lines
+    .map((line) => line.replace(/\bnever used\s+ordered by mistake\b/i, "Never used. Ordered by mistake"))
+    .map((line) => line.replace(/^\p{L}/u, (letter) => letter.toUpperCase()).replace(/([^.!?])$/, "$1."))
+    .join("\n")
+    .slice(0, 4000);
+
+  return {
+    title: cleanTitle.length >= 3 ? cleanTitle : "",
+    description: description.length >= 10 ? description : "",
+    price,
+    category,
+    condition,
+  };
+}

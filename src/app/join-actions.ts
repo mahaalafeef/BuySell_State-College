@@ -106,7 +106,9 @@ export async function approveJoin(id: string) {
   // A number can only have one account. If this one already has one, this request is closed instead of approved.
   const row = await db.joinRequest.findUnique({ where: { id }, select: { whatsapp: true } });
   if (!row) return;
-  const other = await db.joinRequest.count({ where: { whatsapp: row.whatsapp, status: "APPROVED", id: { not: id } } });
+  const other = row.whatsapp
+    ? await db.joinRequest.count({ where: { whatsapp: row.whatsapp, status: "APPROVED", id: { not: id } } })
+    : 0;
   if (other > 0) {
     await db.joinRequest.update({
       where: { id },

@@ -17,7 +17,8 @@ const TABS = ["SELLERS", "MEMBERS", "BANNED"] as const;
 type Tab = (typeof TABS)[number];
 const LABELS: Record<Tab, string> = { SELLERS: "Sellers", MEMBERS: "All members", BANNED: "Banned" };
 
-function show(whatsapp: string) {
+function show(whatsapp: string | null, email?: string | null) {
+  if (!whatsapp) return email ?? "No contact";
   return /^\d+$/.test(whatsapp) ? `+${whatsapp}` : `@${whatsapp}`;
 }
 
@@ -39,7 +40,7 @@ export default async function SellersAdmin({ searchParams }: { searchParams: Pro
       where,
       orderBy: { createdAt: "desc" },
       take: 200,
-      select: { id: true, name: true, whatsapp: true, role: true, createdAt: true, decidedAt: true, decidedNote: true },
+      select: { id: true, name: true, whatsapp: true, email: true, role: true, createdAt: true, decidedAt: true, decidedNote: true },
     }),
     db.joinRequest.count({ where: { status: "APPROVED", listings: { some: {} } } }),
     db.joinRequest.count({ where: { status: "APPROVED" } }),
@@ -116,7 +117,7 @@ export default async function SellersAdmin({ searchParams }: { searchParams: Pro
                   <div className="min-w-0">
                     <p className="font-semibold">{m.name}</p>
                     <p className="text-sm text-muted">
-                      {show(m.whatsapp)} · {m.role}
+                      {show(m.whatsapp, m.email)} · {m.role}
                     </p>
                     <p className="text-xs text-muted">Member since {formatPosted(m.decidedAt ?? m.createdAt)}</p>
                   </div>
@@ -151,14 +152,22 @@ export default async function SellersAdmin({ searchParams }: { searchParams: Pro
                       <Link href={`/sellers/${m.id}`} className="btn-ghost">
                         Profile and reviews
                       </Link>
-                      <a
-                        href={`https://wa.me/${m.whatsapp}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-ghost"
-                      >
-                        Open WhatsApp chat
-                      </a>
+                      {m.whatsapp ? (
+                        <a
+                          href={`https://wa.me/${m.whatsapp}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-ghost"
+                        >
+                          Open WhatsApp chat
+                        </a>
+                      ) : (
+                        m.email && (
+                          <a href={`mailto:${m.email}`} className="btn-ghost">
+                            Email
+                          </a>
+                        )
+                      )}
                       <form action={banMember.bind(null, m.id)} className="flex flex-wrap gap-2">
                         <input
                           name="reason"

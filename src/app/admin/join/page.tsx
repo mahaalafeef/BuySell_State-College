@@ -14,7 +14,8 @@ const TABS = ["PENDING", "APPROVED", "REJECTED"] as const;
 type Tab = (typeof TABS)[number];
 const LABELS: Record<Tab, string> = { PENDING: "To review", APPROVED: "Approved", REJECTED: "Not approved" };
 
-function show(whatsapp: string) {
+function show(whatsapp: string | null, email?: string | null) {
+  if (!whatsapp) return email ?? "No contact";
   return /^\d+$/.test(whatsapp) ? `+${whatsapp}` : `@${whatsapp}`;
 }
 
@@ -30,7 +31,7 @@ export default async function JoinInbox({ searchParams }: { searchParams: Promis
       where: { status: tab },
       orderBy: { createdAt: "desc" },
       take: 100,
-      select: { id: true, name: true, whatsapp: true, role: true, note: true, hasProof: true, decidedNote: true, passwordHash: true, resetRequestedAt: true, createdAt: true },
+      select: { id: true, name: true, whatsapp: true, email: true, role: true, note: true, hasProof: true, decidedNote: true, passwordHash: true, resetRequestedAt: true, createdAt: true },
     }),
     db.joinRequest.groupBy({ by: ["status"], _count: { _all: true } }),
   ]);
@@ -87,7 +88,8 @@ export default async function JoinInbox({ searchParams }: { searchParams: Promis
               </div>
 
               <p className="mt-2">
-                <span className="font-semibold">WhatsApp:</span> {show(r.whatsapp)}
+                <span className="font-semibold">{r.whatsapp ? "WhatsApp:" : "Email:"}</span> {show(r.whatsapp, r.email)}
+                {r.whatsapp && r.email ? ` · ${r.email}` : ""}
               </p>
               {tab === "APPROVED" && (
                 <p className="mt-1 text-sm text-muted">{r.passwordHash ? "Password set." : "Hasn't chosen a password yet."}</p>
@@ -128,12 +130,14 @@ export default async function JoinInbox({ searchParams }: { searchParams: Promis
                       <input name="reason" placeholder="Reason (optional)" aria-label={`Reason for rejecting ${r.name}`} className="input w-44" />
                       <button className="btn-ghost">Reject</button>
                     </form>
-                    <a href={chat(r.whatsapp)} target="_blank" rel="noopener noreferrer" className="btn-ghost">
-                      Open WhatsApp chat
-                    </a>
+                    {r.whatsapp && (
+                      <a href={chat(r.whatsapp)} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                        Open WhatsApp chat
+                      </a>
+                    )}
                   </>
                 )}
-                {tab === "APPROVED" && (
+                {tab === "APPROVED" && r.whatsapp && (
                   <a
                     href={chat(
                       r.whatsapp,

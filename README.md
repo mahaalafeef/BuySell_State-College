@@ -117,3 +117,14 @@ WhatsApp does not let a website post into an ordinary group automatically for fr
 - **Share buttons** (`components/ShareButton.tsx`, `lib/share.ts`) open WhatsApp with the title, price, area, and link ready (`https://wa.me/?text=...`). The person picks the group and presses send. They appear on live listings, after posting, in My account, and for the admin on each live listing in `/admin`.
 - The message contains only public details. Contact details stay members-only.
 - **Link previews:** `generateMetadata` on `/listings/[id]` adds Open Graph tags, so pasting the link into WhatsApp shows the photo, title, and price.
+
+## Email sign-up (no approval)
+
+Anyone can create an account at `/signup` with a name, email and password and is signed in straight away.
+
+- `src/app/signup-actions.ts`: creates the member (already `APPROVED`) and signs them in. Limited to 5 attempts per hour per visitor.
+- Members who sign up with an email have no WhatsApp number (`JoinRequest.whatsapp` is now optional, and `JoinRequest.email` is unique).
+- `/login` accepts an email or a WhatsApp number, so members who joined the old way can still log in.
+- Optional: set `SIGNUP_ALLOWED_EMAIL_DOMAINS="psu.edu"` to only allow certain email domains.
+- Forgotten passwords: the member asks on `/login`, the admin gets it in `/admin/resets`, checks it is them, and sends the reset link by email or WhatsApp.
+- The old "Request to join" flow at `/join` still works if you ever want manual approval again.

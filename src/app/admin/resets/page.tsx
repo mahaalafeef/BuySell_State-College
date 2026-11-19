@@ -10,11 +10,14 @@ import { isAdmin } from "@/lib/session";
 export const metadata: Metadata = { title: "Password resets" };
 export const dynamic = "force-dynamic";
 
-function show(whatsapp: string) {
+function show(whatsapp: string | null, email?: string | null) {
+  if (!whatsapp) return email ?? "No contact";
   return /^\d+$/.test(whatsapp) ? `+${whatsapp}` : `@${whatsapp}`;
 }
 
 const chat = (whatsapp: string, text: string) => `https://wa.me/${whatsapp}?text=${encodeURIComponent(text)}`;
+const mail = (email: string | null, subject: string, body: string) =>
+  `mailto:${email ?? ""}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
 export default async function ResetsAdmin() {
   if (!(await isAdmin())) redirect("/admin/login");
@@ -22,7 +25,7 @@ export default async function ResetsAdmin() {
   const rows = await db.joinRequest.findMany({
     where: { status: "APPROVED", resetRequestedAt: { not: null } },
     orderBy: { resetRequestedAt: "asc" },
-    select: { id: true, name: true, whatsapp: true, resetRequestedAt: true, passwordHash: true },
+    select: { id: true, name: true, whatsapp: true, email: true, resetRequestedAt: true, passwordHash: true },
   });
 
   return (
@@ -40,9 +43,9 @@ export default async function ResetsAdmin() {
       </div>
 
       <ol className="list-decimal space-y-1 rounded-lg border border-line bg-white p-4 pl-8 text-sm">
-        <li>Message the person on WhatsApp to check it is really them.</li>
+        <li>Contact the person (WhatsApp, or email for email accounts) to check it is really them.</li>
         <li>Press &ldquo;Reset password&rdquo;. Their old password stops working.</li>
-        <li>Press &ldquo;Send reset link on WhatsApp&rdquo; so they can choose a new one.</li>
+        <li>Press &ldquo;Send reset link&rdquo; so they can choose a new password.</li>
       </ol>
 
       {rows.length === 0 ? (
@@ -55,7 +58,7 @@ export default async function ResetsAdmin() {
             <li key={r.id} className="rounded-xl border border-line bg-white p-4">
               <p className="text-lg font-semibold">{r.name}</p>
               <p className="text-sm text-muted">
-                {show(r.whatsapp)} · asked {r.resetRequestedAt ? formatPosted(r.resetRequestedAt, true) : ""}
+                {show(r.whatsapp, r.email)} · asked {r.resetRequestedAt ? formatPosted(r.resetRequestedAt, true) : ""}
               </p>
               <p className="mt-1 text-sm text-muted">
                 {r.passwordHash ? "Still has their old password." : "Password already cleared: they can choose a new one."}
@@ -63,29 +66,45 @@ export default async function ResetsAdmin() {
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <a
-                  href={chat(
-                    r.whatsapp,
-                    `Hi ${r.name}! We got a request to reset your password for ${SITE_NAME}. Was that you? If so, reply here and I will send you a link.`,
-                  )}
+                  href={
+                    r.whatsapp
+                      ? chat(
+                          r.whatsapp,
+                          `Hi ${r.name}! We got a request to reset your password for ${SITE_NAME}. Was that you? If so, reply here and I will send you a link.`,
+                        )
+                      : mail(
+                          r.email,
+                          `Password reset for ${SITE_NAME}`,
+                          `Hi ${r.name}! We got a request to reset your password for ${SITE_NAME}. Was that you? If so, reply to this email and I will send you a link.`,
+                        )
+                  }
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-ghost"
                 >
-                  1. Check with them on WhatsApp
+                  {r.whatsapp ? "1. Check with them on WhatsApp" : "1. Check with them by email"}
                 </a>
                 <form action={resetMemberPassword.bind(null, r.id)}>
                   <button className="btn-ghost">2. Reset password</button>
                 </form>
                 <a
-                  href={chat(
-                    r.whatsapp,
-                    `Hi ${r.name}! Here is your link to choose a new password for ${SITE_NAME} (please do not share it): ${memberLink(r.id)}`,
-                  )}
+                  href={
+                    r.whatsapp
+                      ? chat(
+                          r.whatsapp,
+                          `Hi ${r.name}! Here is your link to choose a new password for ${SITE_NAME} (please do not share it): ${memberLink(r.id)}`,
+                        )
+                      : mail(
+                          r.email,
+                          `Choose a new password for ${SITE_NAME}`,
+                          `Hi ${r.name}! Here is your link to choose a new password for ${SITE_NAME} (please do not share it): ${memberLink(r.id)}`,
+                        )
+                  }
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-primary"
                 >
-                  3. Send reset link on WhatsApp
+                  {r.whatsapp ? "3. Send reset link on WhatsApp" : "3. Send reset link by email"}
                 </a>
                 <form action={dismissReset.bind(null, r.id)}>
                   <button className="btn-ghost">Dismiss</button>

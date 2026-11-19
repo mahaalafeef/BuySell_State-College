@@ -12,7 +12,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       {link && (
         <p role="status" className="rounded-md bg-paper p-3 text-sm">
           Your password is already set. For your security, your personal link only works for choosing a password, so
-          please log in with your WhatsApp number and password.
+          please log in with your email or WhatsApp number and your password.
         </p>
       )}
       <LoginForm />

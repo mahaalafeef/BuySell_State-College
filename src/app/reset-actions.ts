@@ -11,15 +11,17 @@ export type ResetState = { ok?: boolean; error?: string } | undefined;
 
 /**
  * A member who forgot their password asks for help. Nothing is reset automatically: this only tells the admin,
- * who checks with the person on WhatsApp and then sends a link to that number. The answer is the same whether or
+ * who checks with the person (on WhatsApp or by email) and then sends them a link. The answer is the same whether or
  * not the number has an account.
  */
 export async function requestPasswordReset(_prev: ResetState, fd: FormData): Promise<ResetState> {
   if (String(fd.get("website") ?? "") !== "") return { ok: true }; // spam trap
 
-  const whatsapp = normalizeWhatsapp(String(fd.get("phone") ?? "").trim());
-  if (!whatsapp) {
-    return { error: "Enter the WhatsApp number you used to join, with country code (+1 555 123 4567), or your WhatsApp username." };
+  const idRaw = String(fd.get("identifier") ?? fd.get("phone") ?? "").trim();
+  const isEmail = /^[^\s@]+@[^\s@]+$/.test(idRaw);
+  const whatsapp = isEmail ? null : normalizeWhatsapp(idRaw);
+  if (!isEmail && !whatsapp) {
+    return { error: "Enter the email you signed up with, or the WhatsApp number you used to join (with country code, +1 555 123 4567)." };
   }
 
   const hash = ipHash(await headers());
@@ -27,7 +29,7 @@ export async function requestPasswordReset(_prev: ResetState, fd: FormData): Pro
   await recordEvent("reset", hash);
 
   const member = await db.joinRequest.findFirst({
-    where: { whatsapp, status: "APPROVED" },
+    where: isEmail ? { email: idRaw.toLowerCase(), status: "APPROVED" } : { whatsapp: whatsapp as string, status: "APPROVED" },
     orderBy: { decidedAt: "desc" },
     select: { id: true, name: true },
   });

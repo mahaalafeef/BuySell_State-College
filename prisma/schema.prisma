@@ -81,7 +81,8 @@ model ChatEvent {
 model JoinRequest {
   id          String    @id @default(cuid())
   name        String
-  whatsapp    String // digits with country code, or a WhatsApp username
+  whatsapp    String? // digits with country code, or a WhatsApp username (empty for people who signed up with an email)
+  email       String?   @unique // set for people who create their own account with an email and password
   role        String // how they are connected (student, resident, ...)
   note        String?
   proof       Bytes? // photo of their proof; set to null once the request is decided

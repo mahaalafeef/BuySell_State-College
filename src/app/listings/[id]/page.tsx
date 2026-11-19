@@ -158,11 +158,11 @@ export default async function ListingPage({ params }: Params) {
             </div>
           ) : (
             <div className="rounded-lg border border-line bg-white p-4">
-              <p className="font-semibold">Contact details are for approved members</p>
-              <p className="mt-1 text-sm text-muted">Log in or request to join to see how to reach the seller.</p>
+              <p className="font-semibold">Contact details are for members</p>
+              <p className="mt-1 text-sm text-muted">Log in or create a free account to see how to reach the seller.</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <Link href="/login" className="btn-primary">Member log in</Link>
-                <Link href="/join" className="btn-ghost">Request to join</Link>
+                <Link href="/signup" className="btn-primary">Create account</Link>
+                <Link href="/login" className="btn-ghost">Member log in</Link>
               </div>
             </div>
           ))}

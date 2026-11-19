@@ -14,11 +14,11 @@ export default async function MembersPage({ searchParams }: { searchParams: Prom
     <div className="mx-auto max-w-2xl space-y-6">
       <PageHero title="Members only" subtitle={`${SITE_NAME} is for people connected to Penn State or living in State College.`}>
         <div className="flex flex-wrap gap-2">
-          <Link href="/login" className="btn bg-white text-brand hover:bg-white/90">
-            Member log in
+          <Link href="/signup" className="btn bg-white text-brand hover:bg-white/90">
+            Create account
           </Link>
-          <Link href="/join" className="btn border border-white/40 text-white hover:bg-white/10">
-            Request to join
+          <Link href="/login" className="btn border border-white/40 text-white hover:bg-white/10">
+            Member log in
           </Link>
         </div>
       </PageHero>
@@ -41,12 +41,13 @@ export default async function MembersPage({ searchParams }: { searchParams: Prom
       <section className="space-y-3 rounded-xl border border-line bg-white p-5">
         <h2 className="text-xl font-bold">How it works</h2>
         <ol className="list-decimal space-y-2 pl-5">
-          <li>Tap &ldquo;Request to join&rdquo; and send your name and WhatsApp number, and tell us how you are connected.</li>
-          <li>We review it and message you on WhatsApp.</li>
-          <li>You get a personal link. Open it once to choose a password.</li>
-          <li>After that, log in any time with your WhatsApp number and password.</li>
+          <li>Tap &ldquo;Create account&rdquo; and enter your name, your email and a password.</li>
+          <li>You are signed in right away. There is nothing to wait for.</li>
+          <li>Next time, log in with your email and password.</li>
         </ol>
-        <p className="text-sm text-muted">Already approved? Use &ldquo;Member log in&rdquo;. First time? Open the personal link we sent you on WhatsApp.</p>
+        <p className="text-sm text-muted">
+          Joined earlier through WhatsApp? Use &ldquo;Member log in&rdquo; with your WhatsApp number, or open the personal link we sent you.
+        </p>
       </section>
     </div>
   );

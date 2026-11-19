@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import type { JoinRequest } from "@prisma/client";
 import { LOCK_MINUTES, MAX_FAILED_ATTEMPTS } from "@/lib/config";
 import { db } from "@/lib/db";
 import { codeMatches, MEMBER_COOKIE, setMemberCookie } from "@/lib/members";
@@ -39,24 +40,33 @@ export async function setMemberPassword(_prev: MemberFormState, fd: FormData): P
   redirect("/");
 }
 
-/** Log in with the WhatsApp number used to join, plus the member's password. */
+/** Log in with the email (or the WhatsApp number used to join) plus the member's password. */
 export async function memberLogin(_prev: MemberFormState, fd: FormData): Promise<MemberFormState> {
-  const phoneRaw = String(fd.get("phone") ?? "").trim();
+  const idRaw = String(fd.get("identifier") ?? fd.get("phone") ?? "").trim();
   const password = String(fd.get("password") ?? "");
-  const generic = "That WhatsApp number or password didn't match.";
-  if (!phoneRaw || !password) return { error: "Enter your WhatsApp number and password." };
+  const generic = "That email, number or password didn't match.";
+  if (!idRaw || !password) return { error: "Enter your email (or WhatsApp number) and password." };
 
   const hash = ipHash(await headers());
   if (await checkLimit("login", hash, 20)) return { error: "Too many attempts. Please wait a while and try again." };
   await recordEvent("login", hash);
 
-  const whatsapp = normalizeWhatsapp(phoneRaw);
-  const row = whatsapp
-    ? await db.joinRequest.findFirst({
-        where: { whatsapp, status: "APPROVED", passwordHash: { not: null } },
-        orderBy: { decidedAt: "desc" },
-      })
-    : null;
+  let row: JoinRequest | null = null;
+  if (/^[^\s@]+@[^\s@]+$/.test(idRaw)) {
+    // An email address
+    row = await db.joinRequest.findFirst({
+      where: { email: idRaw.toLowerCase(), status: "APPROVED", passwordHash: { not: null } },
+    });
+  } else {
+    // A WhatsApp number or username (members who joined through the WhatsApp request form)
+    const whatsapp = normalizeWhatsapp(idRaw);
+    row = whatsapp
+      ? await db.joinRequest.findFirst({
+          where: { whatsapp, status: "APPROVED", passwordHash: { not: null } },
+          orderBy: { decidedAt: "desc" },
+        })
+      : null;
+  }
 
   if (!row || !row.passwordHash) {
     verifyPasscode(password, dummyHash());

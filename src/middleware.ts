@@ -4,7 +4,7 @@ import { isValidToken } from "@/lib/edgeToken";
 // Pages anyone can open. Everything else needs a member (or admin) sign-in cookie.
 // Browsing (/, /housing, /listings) is public; seller contact details are hidden
 // from non-members inside the listing page and /contact/[id] (see lib/memberAccess.ts).
-const OPEN = ["/join", "/login", "/members", "/enter", "/admin", "/api/chat", "/support/whatsapp", "/housing", "/listings", "/terms", "/privacy"];
+const OPEN = ["/join", "/signup", "/login", "/members", "/enter", "/admin", "/api/chat", "/support/whatsapp", "/housing", "/listings", "/terms", "/privacy"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;

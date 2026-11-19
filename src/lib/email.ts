@@ -72,7 +72,7 @@ export async function notifyAdminReset(req: { name: string }) {
   const html = `
     <h2>Password reset requested</h2>
     <p><strong>${esc(req.name)}</strong> says they forgot their password.</p>
-    <p>Message them on WhatsApp to check it is really them, then reset it from the admin page.</p>
+    <p>Contact them (WhatsApp or email) to check it is really them, then reset it from the admin page.</p>
     <p><a href="${siteUrl()}/admin/resets">Open password reset requests</a></p>`;
   await sendToAdmin(`Password reset requested by ${req.name}`, html);
 }

@@ -21,7 +21,6 @@ export type DraftResult = { draft?: AiDraft; notes?: string[]; usedAi?: boolean;
 
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-haiku-5-5";
 const PER_MEMBER_PER_HOUR = 10;
-const DAILY_CAP = Number(process.env.AI_LISTING_DAILY_LIMIT || 200);
 const AREA = process.env.SITE_AREA || "State College, Pennsylvania, USA and the neighboring towns around Penn State University";
 
 function systemPrompt() {
@@ -66,18 +65,18 @@ function isSitePhoto(u: unknown): u is string {
   }
 }
 
-type ImageBlock = { type: "image"; source: { type: "base64"; media_type: string; data: string } };
+type Image = { mediaType: string; data: string };
 
 /** Downloads one of our own photos and packages it for the AI (more reliable than asking the AI to fetch the link). */
-async function loadImage(url: string): Promise<ImageBlock | null> {
+async function loadImage(url: string): Promise<Image | null> {
   try {
     const r = await fetch(url, { signal: AbortSignal.timeout(12_000) });
     if (!r.ok) return null;
     const buf = Buffer.from(await r.arrayBuffer());
     if (buf.length === 0 || buf.length > 4_500_000) return null;
     const type = (r.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
-    const media_type = ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(type) ? type : "image/jpeg";
-    return { type: "image", source: { type: "base64", media_type, data: buf.toString("base64") } };
+    const mediaType = ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(type) ? type : "image/jpeg";
+    return { mediaType, data: buf.toString("base64") };
   } catch {
     return null;
   }
@@ -85,10 +84,14 @@ async function loadImage(url: string): Promise<ImageBlock | null> {
 
 type Outcome = { ok: true; text: string } | { ok: false; reason: string };
 
-/** Asks Claude, trying a backup model if the first isn't found and retrying once when the service is busy. */
-async function askClaude(key: string, content: unknown[]): Promise<Outcome> {
+/** Anthropic (paid): tries a backup model if the first isn't found and retries once when the service is busy. */
+async function askClaude(key: string, images: Image[], noteText: string): Promise<Outcome> {
   const started = Date.now();
   const models = Array.from(new Set([MODEL, "claude-sonnet-5-5", "claude-haiku-5-5"]));
+  const content = [
+    ...images.map((i) => ({ type: "image", source: { type: "base64", media_type: i.mediaType, data: i.data } })),
+    { type: "text", text: noteText },
+  ];
   let reason = "no answer";
 
   for (const model of models) {
@@ -106,7 +109,7 @@ async function askClaude(key: string, content: unknown[]): Promise<Outcome> {
           const text = (data.content ?? []).filter((b) => b.type === "text").map((b) => b.text ?? "").join("");
           return { ok: true, text };
         }
-        console.error("AI listing error:", model, res.status, (await res.text()).slice(0, 300)); // see these in the Vercel logs
+        console.error("AI listing error (Anthropic):", model, res.status, (await res.text()).slice(0, 300)); // see these in the Vercel logs
         reason = `error ${res.status}`;
         if (res.status === 404) break; // that model isn't available: try the next one
         if (res.status === 429 || res.status >= 500) {
@@ -115,10 +118,52 @@ async function askClaude(key: string, content: unknown[]): Promise<Outcome> {
         }
         return { ok: false, reason }; // bad key or bad request: trying again won't help
       } catch (err) {
-        console.error("AI listing request failed:", model, err);
+        console.error("AI listing request failed (Anthropic):", model, err);
         reason = "no response";
         break;
       }
+    }
+  }
+  return { ok: false, reason };
+}
+
+/** Google Gemini (has a free tier): tries backup models, and stops at once if the free limit is reached. */
+async function askGemini(key: string, images: Image[], noteText: string): Promise<Outcome> {
+  const started = Date.now();
+  const models = Array.from(new Set([process.env.GEMINI_MODEL || "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.6-flash"]));
+  const body = JSON.stringify({
+    systemInstruction: { parts: [{ text: systemPrompt() }] },
+    contents: [{ role: "user", parts: [...images.map((i) => ({ inlineData: { mimeType: i.mediaType, data: i.data } })), { text: noteText }] }],
+    generationConfig: { responseMimeType: "application/json", maxOutputTokens: 2048 },
+  });
+  let reason = "no answer";
+
+  for (const model of models) {
+    if (Date.now() - started > 30_000) return { ok: false, reason: "took too long" };
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+        method: "POST",
+        headers: { "x-goog-api-key": key, "content-type": "application/json" },
+        body,
+        signal: AbortSignal.timeout(28_000),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
+        const text = (data.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? "").join("");
+        if (!text) {
+          reason = "empty answer";
+          continue;
+        }
+        return { ok: true, text };
+      }
+      console.error("AI listing error (Gemini):", model, res.status, (await res.text()).slice(0, 300));
+      if (res.status === 429) return { ok: false, reason: "the free usage limit was reached" };
+      reason = `error ${res.status}`;
+      if (res.status === 404 || res.status >= 500) continue; // model missing or busy: try the next one
+      return { ok: false, reason }; // bad key or bad request: trying again won't help
+    } catch (err) {
+      console.error("AI listing request failed (Gemini):", model, err);
+      reason = "no response";
     }
   }
   return { ok: false, reason };
@@ -132,12 +177,6 @@ export async function draftListing(input: { imageUrls: string[]; note: string })
   const imageUrls = Array.isArray(input?.imageUrls) ? input.imageUrls.filter(isSitePhoto).slice(0, 5) : [];
   const note = typeof input?.note === "string" ? input.note.trim().slice(0, 1000) : "";
   if (imageUrls.length === 0 && note.length < 10) return { error: "Add a photo, or write a short description." };
-
-  const limiter = `m:${me.id}`;
-  const limited = await checkLimit("ai", limiter, PER_MEMBER_PER_HOUR, DAILY_CAP);
-  if (limited === "ip") return { error: "You've made several drafts already. Please wait a while, or fill in the form yourself." };
-  if (limited === "daily") return { error: "The AI helper is very busy today. Please try again tomorrow, or fill in the form yourself." };
-  await recordEvent("ai", limiter);
 
   // Without AI: cut a short title off the note, tidy the writing, and find the place
   const withoutAi = (why: string): DraftResult => {
@@ -162,23 +201,38 @@ export async function draftListing(input: { imageUrls: string[]; note: string })
     };
   };
 
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) {
+  // Which AI to use: AI_PROVIDER=gemini or anthropic picks one; otherwise whichever key is set (Anthropic first)
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  const geminiKey = process.env.GEMINI_API_KEY;
+  const choice = process.env.AI_PROVIDER;
+  const provider: "anthropic" | "gemini" | null =
+    choice === "gemini" ? (geminiKey ? "gemini" : null) : choice === "anthropic" ? (anthropicKey ? "anthropic" : null) : anthropicKey ? "anthropic" : geminiKey ? "gemini" : null;
+
+  if (!provider) {
     return withoutAi("The AI writing helper isn't switched on for this site yet, so your words were only tidied up with simple rules. Please improve the writing yourself.");
   }
 
-  const images = (await Promise.all(imageUrls.map(loadImage))).filter((i): i is ImageBlock => i !== null);
+  // Free plans allow few requests a day, so the site limit starts low for Gemini. Over the limit, members still get the simple draft.
+  const dailyCap = Number(process.env.AI_LISTING_DAILY_LIMIT || (provider === "gemini" ? 15 : 200));
+  const limiter = `m:${me.id}`;
+  const limited = await checkLimit("ai", limiter, PER_MEMBER_PER_HOUR, dailyCap);
+  if (limited === "ip") {
+    return withoutAi("You've used the AI helper several times this hour, so this draft only tidies your words with simple rules. Please try again a bit later.");
+  }
+  if (limited === "daily") {
+    return withoutAi("The AI helper has reached its limit for today, so this draft only tidies your words with simple rules. It will be back tomorrow.");
+  }
+  await recordEvent("ai", limiter);
+
+  const images = (await Promise.all(imageUrls.map(loadImage))).filter((i): i is Image => i !== null);
   if (imageUrls.length > 0 && images.length === 0 && note.length < 10) {
     return { error: "We couldn't read your photos. Please try again, or add a few words about the item." };
   }
 
-  const result = await askClaude(key, [
-    ...images,
-    {
-      type: "text",
-      text: note ? `The seller's note:\n"""\n${note}\n"""` : "The seller wrote no note. Use the photos only, and tell them what to add in notes.",
-    },
-  ]);
+  const noteText = note
+    ? `The seller's note:\n"""\n${note}\n"""`
+    : "The seller wrote no note. Use the photos only, and tell them what to add in notes.";
+  const result = provider === "gemini" ? await askGemini(geminiKey as string, images, noteText) : await askClaude(anthropicKey as string, images, noteText);
   if (!result.ok) {
     return withoutAi(`The AI helper couldn't be reached just now (${result.reason}), so your words were only tidied up with simple rules. You can go back and try again.`);
   }

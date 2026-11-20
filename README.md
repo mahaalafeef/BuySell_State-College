@@ -145,6 +145,6 @@ Signed-in members get a "Messages" bubble (bottom left) on every page, so they c
 
 At `/sell/ai` a member adds up to 5 photos (or takes one with the phone camera) and writes a few words. The photos upload to the site's photo storage, then `src/app/ai-listing-actions.ts` sends them and the note to Anthropic, which returns a draft (title, polished description, category, condition, location and a list of things to check). The draft opens in the normal listing form so the member can change anything and tick the Terms box before posting. Nothing is posted automatically, and new listings still follow your normal approval setting.
 
-- Needs `ANTHROPIC_API_KEY` in Vercel. Without it, the page still works but fills the form from the member's words with simple rules (no AI, no photo reading).
+- Needs `ANTHROPIC_API_KEY` in Vercel. Without it (or if the AI can't be reached), the page still works: `src/lib/smartFallback.ts` cuts a short title off the note, tidies the writing and finds the place using `src/lib/localPlaces.ts`. The review banner always says whether AI was used and, if not, why. Optional `SITE_AREA` tells the AI about your area.
 - Limits: 10 drafts per member per hour, and `AI_LISTING_DAILY_LIMIT` (default 200) for the whole site per day.
 - Only photos uploaded to the site's own storage are ever sent to the AI.

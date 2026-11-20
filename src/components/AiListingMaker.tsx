@@ -99,7 +99,7 @@ export function AiListingMaker() {
 
         <div role="status" className="rounded-lg border border-brand/30 bg-brand/5 p-4">
           <p className="font-semibold">
-            {result.usedAi ? "Here is your draft, written by AI." : "Here is a draft from your words."} Nothing is posted yet.
+            {result.usedAi ? "Here is your draft, written by AI." : "AI wasn't used for this draft, so it only tidies your words."} Nothing is posted yet.
           </p>
           <p className="mt-1 text-sm">
             Please read it carefully and check the price, condition and details match what you are selling. You can change anything below before you post.

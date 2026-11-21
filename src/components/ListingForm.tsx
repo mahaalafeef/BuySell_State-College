@@ -5,6 +5,7 @@ import { useActionState, useState } from "react";
 import type { FormState } from "@/app/actions";
 import { CONDITIONS, HOUSING_CATEGORIES, RENTAL_CONDITION, SALE_CATEGORIES } from "@/lib/config";
 import { PhotoUploader } from "./PhotoUploader";
+import { WritingHelper } from "./WritingHelper";
 import { SubmitButton } from "./SubmitButton";
 
 type Props = {
@@ -13,6 +14,7 @@ type Props = {
   initial?: Record<string, string>;
   initialImages?: string[];
   kind?: "item" | "housing"; // edit mode works it out from the listing's category
+  titleIdeas?: string[]; // other titles the AI suggested, shown in the writing helper
 };
 
 function Field({
@@ -44,7 +46,7 @@ function Field({
   );
 }
 
-export function ListingForm({ mode, action, initial = {}, initialImages = [], kind }: Props) {
+export function ListingForm({ mode, action, initial = {}, initialImages = [], kind, titleIdeas }: Props) {
   const [state, formAction] = useActionState(action, undefined);
   const [uploading, setUploading] = useState(false);
   const v = { ...initial, ...state?.values };
@@ -87,6 +89,8 @@ export function ListingForm({ mode, action, initial = {}, initialImages = [], ki
           {...a11y("description")}
         />
       </Field>
+
+      <WritingHelper titleIdeas={titleIdeas} />
 
       <div className={`grid gap-5 ${housing ? "sm:grid-cols-2" : "sm:grid-cols-3"}`}>
         <Field label={housing ? "Rent per month" : "Price"} name="price" error={err("price")}>

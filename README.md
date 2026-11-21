@@ -148,3 +148,7 @@ At `/sell/ai` a member adds up to 5 photos (or takes one with the phone camera) 
 - Needs an AI key in Vercel: `GEMINI_API_KEY` (Google, has a free tier) or `ANTHROPIC_API_KEY` (paid). If both are set, Anthropic is used unless `AI_PROVIDER=gemini`. Without it (or if the AI can't be reached), the page still works: `src/lib/smartFallback.ts` cuts a short title off the note, tidies the writing and finds the place using `src/lib/localPlaces.ts`. The review banner always says whether AI was used and, if not, why. Optional `SITE_AREA` tells the AI about your area.
 - Limits: 10 drafts per member per hour, and `AI_LISTING_DAILY_LIMIT` (default 200) for the whole site per day.
 - Only photos uploaded to the site's own storage are ever sent to the AI.
+
+### Writing helper and place recognition
+
+Inside the listing form, the **Writing helper** (`src/components/WritingHelper.tsx`, server side in `src/app/ai-suggest-actions.ts`) offers 3 title ideas, a clearer description and a detected location. Nothing changes until the person taps "Use". It also fills in the Location field by itself (in the browser, no AI needed) when it finds a place in the title or description and the field is empty. Local places, streets, landmarks and ZIP codes are listed in `src/lib/localPlaces.ts`: add your own there. House numbers are dropped from detected street addresses so nobody posts their home number by accident. Shared AI code is in `src/lib/aiProviders.ts`.

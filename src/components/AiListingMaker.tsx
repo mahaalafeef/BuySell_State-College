@@ -11,7 +11,7 @@ import { ListingForm } from "./ListingForm";
 const MAX_PHOTOS = 5;
 
 type Photo = { id: string; file: File; preview: string; url?: string };
-type Result = { draft: AiDraft; notes: string[]; usedAi: boolean; images: string[]; key: number };
+type Result = { draft: AiDraft; notes: string[]; titleIdeas: string[]; usedAi: boolean; images: string[]; key: number };
 
 /**
  * Quick post: the member adds photos and a few words, AI writes a draft, and the member reviews it
@@ -77,7 +77,7 @@ export function AiListingMaker() {
         setPhase("input");
         return;
       }
-      setResult({ draft: r.draft, notes: r.notes ?? [], usedAi: r.usedAi ?? false, images: urls, key: Date.now() });
+      setResult({ draft: r.draft, notes: r.notes ?? [], titleIdeas: r.titleIdeas ?? [], usedAi: r.usedAi ?? false, images: urls, key: Date.now() });
       setPhase("review");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -113,7 +113,15 @@ export function AiListingMaker() {
           )}
         </div>
 
-        <ListingForm key={result.key} mode="create" kind={kind} action={createListing} initial={{ ...result.draft }} initialImages={result.images} />
+        <ListingForm
+          key={result.key}
+          mode="create"
+          kind={kind}
+          action={createListing}
+          initial={{ ...result.draft }}
+          initialImages={result.images}
+          titleIdeas={result.titleIdeas}
+        />
       </div>
     );
   }
